@@ -1,27 +1,27 @@
-# 增量采集同步实施计划
+# 增量採集同步實施計畫
 
-> 历史实施计划：水位线、历史费用和全量重建部分已被后续实现替代。以下步骤保留供追溯，不是当前执行指令。当前待办见[项目状态](../../project-status.md)，现行语义见[费用与恢复](../../usage-accuracy.md)及[采集性能](../../collection-performance.md)。
+> 歷史實施計畫：水位線、歷史費用和全量重建部分已被後續實作替代。以下步驟保留供追溯，不是目前執行指令。目前待辦見[專案狀態](../../project-status.md)，現行語意見[費用與還原](../../usage-accuracy.md)及[採集效能](../../collection-performance.md)。
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 把采集写库从"全量删表重插 + 逐行 upsert"改为"水位线增量 + 批量 upsert",单次采集对远程 Postgres 的往返从 1.2 万次降到 30 次以内。
+**Goal:** 把採集寫入資料庫從「全量刪表重插 + 逐行 upsert」改為「水位線增量 + 批量 upsert」,單次採集對遠端 Postgres 的往返從 1.2 萬次降到 30 次以內。
 
-**Architecture:** 新增两个模块——`src/incremental.mjs`(纯函数:稳定 eventKey 去重、水位线过滤)和 `src/db-batch.mjs`(水位线查询 + 三张表的多行批量 upsert,兼容 sqlite/postgres/mysql 三驱动)。`src/collect.mjs` 与 `src/server.mjs` 的 `/api/ingest` 换用这两个模块;`--full` 标志保留删表重建路径。
+**Architecture:** 新增兩個模組——`src/incremental.mjs`(純函式:穩定 eventKey 去重、水位線過濾)和 `src/db-batch.mjs`(水位線查詢 + 三張表的多行批量 upsert,相容 sqlite/postgres/mysql 三驅動)。`src/collect.mjs` 與 `src/server.mjs` 的 `/api/ingest` 換用這兩個模組;`--full` 旗標保留刪表重建路徑。
 
-**Tech Stack:** Node 22 原生 `node:test` / `node:sqlite`,pg,mysql2。无新依赖。
+**Tech Stack:** Node 22 原生 `node:test` / `node:sqlite`,pg,mysql2。無新增相依套件。
 
 ## Global Constraints
 
-- 价格锁定语义不变:`daily_usage` 中 `usage_date < 今天` 的行 `cost_usd` 永不被覆盖(spec §相关既有约定)。
-- `time_usage` 老事件在非 `--full` 路径下永不重写(增量即锁价)。
-- 三驱动(sqlite/postgres/mysql)同一套代码路径,SQL 方言差异只允许出现在 `db.mjs`/`db-batch.mjs`。
-- 批量每批 400 行(SQLite 变量上限保守值)。
-- 水位线重叠窗口 48 小时。
-- 现有导出函数 `upsertDaily`/`upsertTimeUsage`/`upsertSession` 保留不删(旧测试仍用)。
+- 價格鎖定語意不變:`daily_usage` 中 `usage_date < 今天` 的行 `cost_usd` 永不被覆蓋(spec §相關既有約定)。
+- `time_usage` 老事件在非 `--full` 路徑下永不重寫(增量即鎖價)。
+- 三驅動(sqlite/postgres/mysql)同一套程式碼路徑,SQL 方言差異只允許出現在 `db.mjs`/`db-batch.mjs`。
+- 批量每批 400 行(SQLite 變數上限保守值)。
+- 水位線重疊視窗 48 小時。
+- 現有匯出函式 `upsertDaily`/`upsertTimeUsage`/`upsertSession` 保留不刪(舊測試仍用)。
 
 ---
 
-### Task 1: 纯函数模块 `src/incremental.mjs`
+### Task 1: 純函式模組 `src/incremental.mjs`
 
 **Files:**
 - Create: `src/incremental.mjs`
@@ -29,12 +29,12 @@
 
 **Interfaces:**
 - Produces:
-  - `dedupeEventKeys(rows) -> rows`(rows: `{eventKey, ...}[]`,重复 key 追加 `#1`/`#2`,首个不变;必须对**过滤前的全量行**调用)
-  - `watermarkCutoff(watermark, overlapMs?) -> string|null`(ISO 水位线 − 48h;null/非法输入返回 null)
-  - `filterTimeRows(rows, cutoff) -> rows`(保留 `eventTime > cutoff`;cutoff 为 null 返回全部)
-  - `filterDailyRows(rows, cutoff) -> rows`(保留 `usageDate >= cutoff.slice(0,10)`;cutoff 为 null 返回全部)
+  - `dedupeEventKeys(rows) -> rows`(rows: `{eventKey, ...}[]`,重複 key 追加 `#1`/`#2`,首個不變;必須對**過濾前的全量行**呼叫)
+  - `watermarkCutoff(watermark, overlapMs?) -> string|null`(ISO 水位線 − 48h;null/非法輸入回傳 null)
+  - `filterTimeRows(rows, cutoff) -> rows`(保留 `eventTime > cutoff`;cutoff 為 null 回傳全部)
+  - `filterDailyRows(rows, cutoff) -> rows`(保留 `usageDate >= cutoff.slice(0,10)`;cutoff 為 null 回傳全部)
 
-- [ ] **Step 1: 写失败测试** `test/incremental.test.mjs`:
+- [ ] **Step 1: 寫失敗測試** `test/incremental.test.mjs`:
 
 ```js
 import { test } from 'node:test';
@@ -47,9 +47,9 @@ test('dedupeEventKeys keeps unique keys and suffixes duplicates deterministicall
   const rows = [{ eventKey: 'a' }, { eventKey: 'b' }, { eventKey: 'a' }, { eventKey: 'a' }];
   const out = dedupeEventKeys(rows);
   assert.deepEqual(out.map(r => r.eventKey), ['a', 'b', 'a#1', 'a#2']);
-  // 同输入再跑一遍结果相同(幂等的前提)
+  // 同輸入再跑一遍結果相同(冪等的前提)
   assert.deepEqual(dedupeEventKeys(rows).map(r => r.eventKey), ['a', 'b', 'a#1', 'a#2']);
-  // 原数组对象未被修改
+  // 原陣列物件未被修改
   assert.equal(rows[2].eventKey, 'a');
 });
 
@@ -78,12 +78,12 @@ test('filterDailyRows keeps dates on or after the cutoff date', () => {
 });
 ```
 
-- [ ] **Step 2: 跑测试确认失败**
+- [ ] **Step 2: 跑測試確認失敗**
 
 Run: `node --test test/incremental.test.mjs`
-Expected: FAIL(模块不存在)
+Expected: FAIL(模組不存在)
 
-- [ ] **Step 3: 实现** `src/incremental.mjs`:
+- [ ] **Step 3: 實作** `src/incremental.mjs`:
 
 ```js
 const DEFAULT_OVERLAP_MS = 48 * 60 * 60 * 1000;
@@ -122,7 +122,7 @@ export function filterDailyRows(rows, cutoff) {
 }
 ```
 
-- [ ] **Step 4: 跑测试确认通过**
+- [ ] **Step 4: 跑測試確認通過**
 
 Run: `node --test test/incremental.test.mjs`
 Expected: PASS(4 tests)
@@ -136,24 +136,24 @@ git commit -m "feat: incremental sync helpers (stable keys, watermark filters)"
 
 ---
 
-### Task 2: 水位线查询 + `time_usage` 批量 upsert(`src/db-batch.mjs`)
+### Task 2: 水位線查詢 + `time_usage` 批量 upsert(`src/db-batch.mjs`)
 
 **Files:**
-- Modify: `src/db.mjs`(导出三个私有辅助函数,函数体不变)
+- Modify: `src/db.mjs`(匯出三個私有輔助函式,函式本體不變)
 - Create: `src/db-batch.mjs`
 - Test: `test/db-batch.test.mjs`
 
 **Interfaces:**
-- Consumes: `db.mjs` 的 `nowExpression(driver)`、`todayExpression(driver)`、`mysqlRowKey(...parts)`(本任务将其从私有改为导出,实现不动)。
+- Consumes: `db.mjs` 的 `nowExpression(driver)`、`todayExpression(driver)`、`mysqlRowKey(...parts)`(本任務將其從私有改為匯出,實作不動)。
 - Produces:
   - `getTimeWatermark(db, device, source) -> Promise<string|null>`
-  - `batchUpsertTimeUsage(db, rows) -> Promise<void>`(rows 结构同现有 `upsertTimeUsage` 的 row)
+  - `batchUpsertTimeUsage(db, rows) -> Promise<void>`(rows 結構同現有 `upsertTimeUsage` 的 row)
 
-- [ ] **Step 1: 在 `src/db.mjs` 给三个辅助函数加 `export`**
+- [ ] **Step 1: 在 `src/db.mjs` 給三個輔助函式加 `export`**
 
-`function nowExpression(` → `export function nowExpression(`;`function todayExpression(` → `export function todayExpression(`;`function mysqlRowKey(` → `export function mysqlRowKey(`。函数体与调用处不变。
+`function nowExpression(` → `export function nowExpression(`;`function todayExpression(` → `export function todayExpression(`;`function mysqlRowKey(` → `export function mysqlRowKey(`。函式本體與呼叫處不變。
 
-- [ ] **Step 2: 写失败测试** `test/db-batch.test.mjs`:
+- [ ] **Step 2: 寫失敗測試** `test/db-batch.test.mjs`:
 
 ```js
 import { test } from 'node:test';
@@ -187,10 +187,10 @@ test('batchUpsertTimeUsage crosses chunk boundaries and is idempotent', async ()
     await batchUpsertTimeUsage(db, rows);
     let { c } = await db.get('SELECT COUNT(*) AS c FROM time_usage');
     assert.equal(c, 401);
-    await batchUpsertTimeUsage(db, rows); // 重跑不产生重复
+    await batchUpsertTimeUsage(db, rows); // 重跑不產生重複
     ({ c } = await db.get('SELECT COUNT(*) AS c FROM time_usage'));
     assert.equal(c, 401);
-    await batchUpsertTimeUsage(db, []); // 空批不报错
+    await batchUpsertTimeUsage(db, []); // 空批不報錯
     await db.close();
   } finally { cleanup(); }
 });
@@ -209,17 +209,17 @@ test('getTimeWatermark returns MAX(event_time) per device+source, null when empt
 });
 ```
 
-- [ ] **Step 3: 跑测试确认失败**
+- [ ] **Step 3: 跑測試確認失敗**
 
 Run: `node --test test/db-batch.test.mjs`
 Expected: FAIL(`src/db-batch.mjs` 不存在)
 
-- [ ] **Step 4: 实现** `src/db-batch.mjs`:
+- [ ] **Step 4: 實作** `src/db-batch.mjs`:
 
 ```js
 import { mysqlRowKey, nowExpression, todayExpression } from './db.mjs';
 
-// SQLite 默认变量上限为 32766,但保守起见每批 400 行(400 × 16 参数 = 6400)。
+// SQLite 預設變數上限為 32766,但保守起見每批 400 行(400 × 16 參數 = 6400)。
 const CHUNK_SIZE = 400;
 
 function chunks(rows, size = CHUNK_SIZE) {
@@ -285,10 +285,10 @@ export async function batchUpsertTimeUsage(db, rows) {
 }
 ```
 
-- [ ] **Step 5: 跑测试确认通过**
+- [ ] **Step 5: 跑測試確認通過**
 
 Run: `node --test test/db-batch.test.mjs`
-Expected: PASS(2 tests)。再跑 `node --test test/db.test.mjs` 确认 db.mjs 导出改动无回归。
+Expected: PASS(2 tests)。再跑 `node --test test/db.test.mjs` 確認 db.mjs 匯出改動無迴歸。
 
 - [ ] **Step 6: 提交**
 
@@ -308,10 +308,10 @@ git commit -m "feat: time_usage batch upsert and watermark query"
 **Interfaces:**
 - Consumes: Task 2 的 `chunks`、`nowExpression`、`todayExpression`、`mysqlRowKey`。
 - Produces:
-  - `batchUpsertDaily(db, rows) -> Promise<void>`(row 结构同现有 `upsertDaily`;保留价格锁定 CASE)
-  - `batchUpsertSession(db, rows) -> Promise<void>`(row 结构同现有 `upsertSession`)
+  - `batchUpsertDaily(db, rows) -> Promise<void>`(row 結構同現有 `upsertDaily`;保留價格鎖定 CASE)
+  - `batchUpsertSession(db, rows) -> Promise<void>`(row 結構同現有 `upsertSession`)
 
-- [ ] **Step 1: 追加失败测试**到 `test/db-batch.test.mjs`:
+- [ ] **Step 1: 追加失敗測試**到 `test/db-batch.test.mjs`:
 
 ```js
 import { batchUpsertDaily, batchUpsertSession } from '../src/db-batch.mjs';
@@ -328,7 +328,7 @@ test('batchUpsertDaily keeps historical cost locked but updates tokens', async (
   const { path, cleanup } = tmpDbPath();
   try {
     const db = await openDb(path);
-    await batchUpsertDaily(db, [dailyRow()]); // 历史日期,首次写入
+    await batchUpsertDaily(db, [dailyRow()]); // 歷史日期,首次寫入
     await batchUpsertDaily(db, [dailyRow({ costUSD: 99, totalTokens: 20 })]);
     const row = await db.get('SELECT cost_usd, total_tokens, pricing_locked_at FROM daily_usage WHERE usage_date = ?', ['2026-01-01']);
     assert.equal(row.cost_usd, 1, 'historical cost must stay locked');
@@ -342,7 +342,7 @@ test('batchUpsertDaily updates cost for today', async () => {
   const { path, cleanup } = tmpDbPath();
   try {
     const db = await openDb(path);
-    const today = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD 本地时区
+    const today = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD 本機時區
     await batchUpsertDaily(db, [dailyRow({ usageDate: today, costUSD: 1 })]);
     await batchUpsertDaily(db, [dailyRow({ usageDate: today, costUSD: 2 })]);
     const row = await db.get('SELECT cost_usd, pricing_locked_at FROM daily_usage WHERE usage_date = ?', [today]);
@@ -373,12 +373,12 @@ test('batchUpsertSession upserts by (device, source, session_id)', async () => {
 });
 ```
 
-- [ ] **Step 2: 跑测试确认失败**
+- [ ] **Step 2: 跑測試確認失敗**
 
 Run: `node --test test/db-batch.test.mjs`
-Expected: FAIL(`batchUpsertDaily` 未导出)
+Expected: FAIL(`batchUpsertDaily` 未匯出)
 
-- [ ] **Step 3: 实现**,追加到 `src/db-batch.mjs`:
+- [ ] **Step 3: 實作**,追加到 `src/db-batch.mjs`:
 
 ```js
 const DAILY_COLUMNS = `
@@ -481,7 +481,7 @@ export async function batchUpsertSession(db, rows) {
 }
 ```
 
-- [ ] **Step 4: 跑测试确认通过**
+- [ ] **Step 4: 跑測試確認通過**
 
 Run: `node --test test/db-batch.test.mjs`
 Expected: PASS(5 tests)
@@ -495,18 +495,18 @@ git commit -m "feat: daily/session batch upserts with pricing lock preserved"
 
 ---
 
-### Task 4: 接入 `src/collect.mjs`(水位线 + `--full`)
+### Task 4: 接入 `src/collect.mjs`(水位線 + `--full`)
 
 **Files:**
 - Modify: `src/collect.mjs`
 
 **Interfaces:**
-- Consumes: Task 1 全部四个函数;Task 2/3 的 `getTimeWatermark`、`batchUpsertTimeUsage`、`batchUpsertDaily`、`batchUpsertSession`;现有 `deleteTimeUsageForSource`。
-- Produces: CLI 新增 `--full` 标志;`exportPayload` 新增 `mode: 'full' | 'incremental'` 字段(Task 5 的 ingest 依赖);payload 中 `daily`/`time` 只含本次实际写入的行。
+- Consumes: Task 1 全部四個函式;Task 2/3 的 `getTimeWatermark`、`batchUpsertTimeUsage`、`batchUpsertDaily`、`batchUpsertSession`;現有 `deleteTimeUsageForSource`。
+- Produces: CLI 新增 `--full` 旗標;`exportPayload` 新增 `mode: 'full' | 'incremental'` 欄位(Task 5 的 ingest 依賴);payload 中 `daily`/`time` 只含本次實際寫入的行。
 
-- [ ] **Step 1: 改 import 与 parseArgs**
+- [ ] **Step 1: 改 import 與 parseArgs**
 
-`src/collect.mjs` 顶部 import 区改为:
+`src/collect.mjs` 頂部 import 區改為:
 
 ```js
 import { deleteTimeUsageForSource, openDb, recordRun } from './db.mjs';
@@ -514,23 +514,23 @@ import { batchUpsertDaily, batchUpsertSession, batchUpsertTimeUsage, getTimeWate
 import { dedupeEventKeys, filterDailyRows, filterTimeRows, watermarkCutoff } from './incremental.mjs';
 ```
 
-`parseArgs` 的 for 循环内追加分支:
+`parseArgs` 的 for 迴圈內追加分支:
 
 ```js
     } else if (arg === '--full') {
       parsed.full = true;
 ```
 
-`exportPayload` 初始化对象加一行 `mode: args.full ? 'full' : 'incremental',`(放在 `device` 之后)。
+`exportPayload` 初始化物件加一行 `mode: args.full ? 'full' : 'incremental',`(放在 `device` 之後)。
 
-- [ ] **Step 2: 替换 collectLocal 内的写库段**
+- [ ] **Step 2: 替換 collectLocal 內的寫入資料庫段**
 
-把现在的三段"normalize + runInTransaction 逐行 upsert"(约 68–85 行)整体替换为:
+把現在的三段"normalize + runInTransaction 逐行 upsert"(約 68–85 行)整體替換為:
 
 ```js
     const dailyRows = normalizeDailyRows(graphJson, device);
     const sessionRows = normalizeSessionRows(modelsJson, device);
-    // 先在全量批次上生成稳定 key,再做水位线过滤,保证 #n 序号跨次运行一致
+    // 先在全量批次上生成穩定 key,再做水位線過濾,保證 #n 序號跨次執行一致
     const timeRows = dedupeEventKeys(normalizeTimeRows(eventsJson, device));
 
     const watermark = args.full ? null : await getTimeWatermark(db, device, label);
@@ -542,7 +542,7 @@ import { dedupeEventKeys, filterDailyRows, filterTimeRows, watermarkCutoff } fro
     await runInTransaction(db, async (tx) => {
       await batchUpsertDaily(tx, dailyToWrite);
       await batchUpsertSession(tx, sessionRows);
-      // 全量重建才允许删表;增量路径老事件永不触碰(价格锁定语义)
+      // 全量重建才允許刪表;增量路徑老事件永不觸碰(價格鎖定語意)
       if (fullRebuild) await deleteTimeUsageForSource(tx, device, label);
       await batchUpsertTimeUsage(tx, timeToWrite);
     });
@@ -551,17 +551,17 @@ import { dedupeEventKeys, filterDailyRows, filterTimeRows, watermarkCutoff } fro
     exportPayload.time.push(...timeToWrite);
 ```
 
-run 记录的 message 改为(体现增量规模):
+run 記錄的 message 改為(體現增量規模):
 
 ```js
       message: `daily=${dailyToWrite.length}/${dailyRows.length}, time=${timeToWrite.length}/${timeRows.length}, workspace_model=${sessionRows.length}${fullRebuild ? ', full' : ''}`,
 ```
 
-console.log 同步改成打印该 message。`status` 判定改用 `dailyRows.length || sessionRows.length`(按源数据判空,与过滤无关,维持原语义)。
+console.log 同步改成列印該 message。`status` 判定改用 `dailyRows.length || sessionRows.length`(按源資料判空,與過濾無關,維持原語意)。
 
-- [ ] **Step 3: 稳定化 normalizeTimeRows 的兜底 key**
+- [ ] **Step 3: 穩定化 normalizeTimeRows 的兜底 key**
 
-`normalizeTimeRows` 的 map 回调去掉 `index` 参数,`eventKey` 字段改为:
+`normalizeTimeRows` 的 map 回呼去掉 `index` 參數,`eventKey` 欄位改為:
 
 ```js
       eventKey: entry.eventKey || [
@@ -573,30 +573,30 @@ console.log 同步改成打印该 message。`status` 判定改用 `dailyRows.len
       ].join(':'),
 ```
 
-(与旧公式唯一区别是去掉了末尾的 `index`;重复元组由 `dedupeEventKeys` 追加 `#n`。)
+(與舊公式唯一區別是去掉了末尾的 `index`;重複元組由 `dedupeEventKeys` 追加 `#n`。)
 
-- [ ] **Step 4: 全量回归 + 手动验证**
+- [ ] **Step 4: 全量迴歸 + 手動驗證**
 
 Run: `node --test`
 Expected: 全部 PASS。
 
-手动验证(临时库,先全量后增量):
+手動驗證(暫存資料庫,先全量後增量):
 
 ```bash
 cd <repo-root>
 DB=/tmp/collect-verify.sqlite
 rm -f $DB
-node src/collect.mjs --db $DB          # 空库 → 自动全量
-node src/collect.mjs --db $DB          # 有水位线 → 增量
+node src/collect.mjs --db $DB          # 空資料庫 → 自動全量
+node src/collect.mjs --db $DB          # 有水位線 → 增量
 ```
 
-Expected:第一次输出 `time=N/N ... full`;第二次输出 `time=n/N`(n ≪ N,只有重叠窗口内的行),且两次之后:
+Expected:第一次輸出 `time=N/N ... full`;第二次輸出 `time=n/N`(n ≪ N,只有重疊視窗內的行),且兩次之後:
 
 ```bash
 node -e "const {DatabaseSync}=require('node:sqlite');const db=new DatabaseSync('/tmp/collect-verify.sqlite');console.log(db.prepare('SELECT COUNT(*) c, ROUND(SUM(total_tokens)) t FROM time_usage').get());"
 ```
 
-与第一次采集后的计数一致(增量未引入重复)。再跑 `node src/collect.mjs --db $DB --full` 确认全量重建路径可用、行数不变。
+與第一次採集後的計數一致(增量未引入重複)。再跑 `node src/collect.mjs --db $DB --full` 確認全量重建路徑可用、行數不變。
 
 - [ ] **Step 5: 提交**
 
@@ -607,16 +607,16 @@ git commit -m "feat: watermark-incremental collect with --full rebuild flag"
 
 ---
 
-### Task 5: `/api/ingest` 改为批量 + 按 mode 删表
+### Task 5: `/api/ingest` 改為批量 + 按 mode 刪表
 
 **Files:**
-- Modify: `src/server.mjs`(`handleIngest`,约 363–403 行;import 区)
+- Modify: `src/server.mjs`(`handleIngest`,約 363–403 行;import 區)
 
 **Interfaces:**
-- Consumes: Task 2/3 的 `batchUpsertDaily`、`batchUpsertSession`、`batchUpsertTimeUsage`;Task 4 的 payload `mode` 字段。
-- Produces: ingest 语义——`mode === 'full'`(或旧客户端无 mode 字段)才按 (device, source) 删表重建;`mode === 'incremental'` 只 upsert。
+- Consumes: Task 2/3 的 `batchUpsertDaily`、`batchUpsertSession`、`batchUpsertTimeUsage`;Task 4 的 payload `mode` 欄位。
+- Produces: ingest 語意——`mode === 'full'`(或舊用戶端無 mode 欄位)才按 (device, source) 刪表重建;`mode === 'incremental'` 只 upsert。
 
-**背景:** 现在 ingest 对 payload 里出现的每个 (device, source) 先删光再重插。Task 4 之后增量 payload 只含窗口内的行,如果保留无条件删表,会把远端历史事件全部误删——本任务必须与 Task 4 同批部署。旧版客户端(无 mode 字段)payload 仍是全量,视为 `'full'` 保持兼容。
+**背景:** 現在 ingest 對 payload 裡出現的每個 (device, source) 先刪光再重插。Task 4 之後增量 payload 只含視窗內的行,如果保留無條件刪表,會把遠端歷史事件全部誤刪——本任務必須與 Task 4 同批部署。舊版用戶端(無 mode 欄位)payload 仍是全量,視為 `'full'` 保持相容。
 
 - [ ] **Step 1: 改 import**
 
@@ -626,13 +626,13 @@ git commit -m "feat: watermark-incremental collect with --full rebuild flag"
 import { batchUpsertDaily, batchUpsertSession, batchUpsertTimeUsage } from './db-batch.mjs';
 ```
 
-- [ ] **Step 2: 替换 handleIngest 的事务段**
+- [ ] **Step 2: 替換 handleIngest 的交易段**
 
 ```js
     const fullRebuild = payload.mode !== 'incremental';
 
-    // 全量 push 携带设备完整时间窗,按 (device, source) 整体替换;
-    // 增量 push 只含新事件,只做 upsert,绝不删表。
+    // 全量 push 攜帶裝置完整時間窗,按 (device, source) 整體替換;
+    // 增量 push 只含新事件,只做 upsert,絕不刪表。
     const timePairs = new Map();
     if (fullRebuild) {
       for (const row of timeRows) {
@@ -649,18 +649,18 @@ import { batchUpsertDaily, batchUpsertSession, batchUpsertTimeUsage } from './db
     });
 ```
 
-响应 JSON 追加 `mode: fullRebuild ? 'full' : 'incremental'` 字段。
+回應 JSON 追加 `mode: fullRebuild ? 'full' : 'incremental'` 欄位。
 
-- [ ] **Step 3: 回归 + 手动验证**
+- [ ] **Step 3: 迴歸 + 手動驗證**
 
 Run: `node --test`
 Expected: 全部 PASS。
 
-手动验证 ingest(临时库起服务):
+手動驗證 ingest(暫存資料庫啟動服務):
 
 ```bash
 DB=/tmp/ingest-verify.sqlite; rm -f $DB
-PORT=4999 DB_PATH=$DB node src/server.mjs &   # 记下 pid
+PORT=4999 DB_PATH=$DB node src/server.mjs &   # 記下 pid
 sleep 1
 curl -s -X POST localhost:4999/api/ingest -H 'content-type: application/json' -d '{
   "mode":"full","daily":[],"sessions":[],"runs":[],
@@ -672,7 +672,7 @@ kill %1
 node -e "const {DatabaseSync}=require('node:sqlite');const db=new DatabaseSync('/tmp/ingest-verify.sqlite');console.log(db.prepare('SELECT COUNT(*) c FROM time_usage').get());"
 ```
 
-Expected: `{ c: 2 }`——增量 push 没有删掉 full push 写入的事件 a。
+Expected: `{ c: 2 }`——增量 push 沒有刪掉 full push 寫入的事件 a。
 
 - [ ] **Step 4: 提交**
 
@@ -683,36 +683,36 @@ git commit -m "feat: mode-aware batched ingest endpoint"
 
 ---
 
-### Task 6: 收尾验证与文档
+### Task 6: 收尾驗證與文件
 
 **Files:**
-- Modify: `README.md`(采集章节追加 `--full` 说明)
+- Modify: `README.md`(採集章節追加 `--full` 說明)
 
 **Interfaces:**
-- Consumes: 全部前置任务。
+- Consumes: 全部前置任務。
 
-- [ ] **Step 1: 全量测试**
+- [ ] **Step 1: 全量測試**
 
 Run: `node --test`
-Expected: 全部 PASS,无跳过。
+Expected: 全部 PASS,無跳過。
 
-- [ ] **Step 2: 真实端到端验证(本地 sqlite)**
+- [ ] **Step 2: 真實端到端驗證(本機 sqlite)**
 
 ```bash
 cp data/usage.sqlite /tmp/usage-backup.sqlite
-node src/collect.mjs        # 对本地默认库跑一次增量
+node src/collect.mjs        # 對本機預設資料庫跑一次增量
 ```
 
-Expected:输出各源 `time=n/N` 增量数字;跑完 `node src/server.mjs` 起的仪表盘数据正常(总 token/成本与之前一致)。
+Expected:輸出各源 `time=n/N` 增量數字;跑完 `node src/server.mjs` 起的看板資料正常(總 token/成本與之前一致)。
 
-- [ ] **Step 3: README 采集章节追加**(找到现有介绍 `npm run collect` 的段落,在其后追加):
+- [ ] **Step 3: README 採集章節追加**(找到現有介紹 `npm run collect` 的段落,在其後追加):
 
 ```markdown
-默认为增量采集:只上传比远端水位线(该设备该来源最新事件时间)新的数据,历史事件与已锁定的历史成本不会被改写。如需全量重建(如采集器逻辑变更后),使用:
+預設為增量採集:只上傳比遠端水位線(該裝置該來源最新事件時間)新的資料,歷史事件與已鎖定的歷史成本不會被改寫。如需全量重建(如採集器邏輯變更後),使用:
 
     node src/collect.mjs --full
 
-注意:`--full` 会删除该设备的远端事件并按当前价格重算历史成本。
+注意:`--full` 會刪除該裝置的遠端事件並按目前價格重算歷史成本。
 ```
 
 - [ ] **Step 4: 提交**
@@ -722,7 +722,7 @@ git add README.md
 git commit -m "docs: document incremental collect and --full rebuild"
 ```
 
-## 已知边界(实现时不处理,记录在案)
+## 已知邊界(實作時不處理,記錄在案)
 
-- 90 天窗口滑动导致最老一天移出窗口时,如该天内有重复元组,`#n` 序号理论上可能重排;该天早已同步且被锁定,增量路径不会触及,仅 `--full` 时统一重建,无实际影响。
-- `--push` 模式下水位线取自采集端本地库;若 hub 端落后于采集端本地库,增量 push 可能留缺口。当前部署(直连 Supabase,单写入方)不存在此问题;多设备 push 场景恢复手段为 `--full`。
+- 90 天視窗滑動導致最老一天移出視窗時,如該天內有重複元組,`#n` 序號理論上可能重排;該天早已同步且被鎖定,增量路徑不會觸及,僅 `--full` 時統一重建,無實際影響。
+- `--push` 模式下水位線取自採集端本機資料庫;若 hub 端落後於採集端本機資料庫,增量 push 可能留缺口。目前部署(直連 Supabase,單寫入方)不存在此問題;多裝置 push 場景還原手段為 `--full`。

@@ -1,8 +1,8 @@
-# Contributing / 参与贡献
+# Contributing / 參與貢獻
 
 Use a feature branch and a pull request against `main`. Describe the user-visible change, validation, and remaining limits. CI must pass before merge. For larger changes, first discuss the scope in an [issue](https://github.com/fengguanghuai/ai-token-dashboard/issues/new).
 
-在功能分支开发并向 `main` 提交 PR，说明行为变化、验证和限制，CI 通过后再合并。较大改动先通过 [Issue](https://github.com/fengguanghuai/ai-token-dashboard/issues/new) 讨论范围。
+在功能分支開發並向 `main` 提交 PR，說明行為變化、驗證和限制，CI 通過後再合併。較大改動先透過 [Issue](https://github.com/fengguanghuai/ai-token-dashboard/issues/new) 討論範圍。
 
 ## Local validation
 
@@ -26,8 +26,8 @@ Implement `collect()` in `src/collectors/` using the existing `{ graphJson, mode
 
 Keep current work and acceptance boundaries in [project status](docs/project-status.md). Update the corresponding behavior document when contracts change. Never run a full replacement or pricing rewrite against a contributor's real history for a test.
 
-## Bug reports / 问题反馈
+## Bug reports / 問題回饋
 
 Open an [issue](https://github.com/fengguanghuai/ai-token-dashboard/issues/new) with the commit/version, OS, Node version, database driver, affected collector, reproduction steps, expected/actual result and sanitized error. A minimal synthetic log is preferable to a whole session archive. `npm run doctor -- --json` provides a diagnostic report; review it before sharing.
 
-不要上传 `.env`、访问令牌、数据库连接串、OAuth 文件、个人用量数据库或完整会话日志。可提供脱敏后的最小复现、错误信息和诊断报告；若无法脱敏，先描述问题，不附原始文件。
+不要上傳 `.env`、存取權杖、資料庫連線字串、OAuth 檔案、個人用量資料庫或完整工作階段日誌。可提供去識別化後的最小重現、錯誤訊息和診斷報告；若無法去識別化，先描述問題，不附原始檔案。

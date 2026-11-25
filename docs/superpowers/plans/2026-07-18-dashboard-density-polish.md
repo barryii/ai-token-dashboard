@@ -1,34 +1,34 @@
-# Dashboard 紧凑化与图表修正 Implementation Plan
+# Dashboard 緊湊化與圖表修正 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 按 spec `docs/superpowers/specs/2026-07-18-dashboard-density-polish-design.md`：趋势图去圆角、环形图画出全部来源、中间行三卡等高并给缓存卡加「节省费用 + 命中率 sparkline」、热力图格子响应式拉伸并加小时分布。
+**Goal:** 按 spec `docs/superpowers/specs/2026-07-18-dashboard-density-polish-design.md`：趨勢圖去圓角、圓環圖畫出全部來源、中間行三卡等高並給快取卡加「節省費用 + 命中率 sparkline」、熱力圖格子響應式拉伸並加小時分佈。
 
-**Architecture:** 纯前端 React (无 JSX 测试基建，UI 改动靠 dev server 视觉验证 + `npm test` 回归)；唯一的后端改动是 `/api/data` 的 daily 行新增 `cacheSavedUSD` 字段，由 `pricing.mjs` 新导出的 `calculateCacheSavings` 计算（此函数走 TDD）。
+**Architecture:** 純前端 React (無 JSX 測試基礎建設，UI 改動靠 dev server 視覺驗證 + `npm test` 迴歸)；唯一的後端改動是 `/api/data` 的 daily 行新增 `cacheSavedUSD` 欄位，由 `pricing.mjs` 新匯出的 `calculateCacheSavings` 計算（此函式走 TDD）。
 
-**Tech Stack:** React 18 + ECharts 6 + 手写 CSS；Node 22 原生 `node --test`；SQLite 数据（只读，不改 schema）。
+**Tech Stack:** React 18 + ECharts 6 + 手寫 CSS；Node 22 原生 `node --test`；SQLite 資料（只讀，不改 schema）。
 
 ## Global Constraints
 
-- 不改 DB schema、不改采集器、不改表格区 / KPI 行 / 筛选器。
-- 测试命令：`npm test`（node --test，跑 `test/*.test.mjs`）。
-- dev 环境：`npm run dev`（vite 5173 + API 4173）。
-- 工作树里有上一轮未提交的 UI 改动（KPI 6→4、donut 过滤等），先原样提交为基线（Task 1），不要混入本计划的改动。
-- 所有新 UI 文案为中文，与现有风格一致；数字用 `U.compactCN` / `U.fmtUS`。
+- 不改 DB schema、不改採集器、不改表格區 / KPI 行 / 篩選器。
+- 測試指令：`npm test`（node --test，跑 `test/*.test.mjs`）。
+- dev 環境：`npm run dev`（vite 5173 + API 4173）。
+- 工作樹裡有上一輪未提交的 UI 改動（KPI 6→4、donut 過滤等），先原樣提交為基準線（Task 1），不要混入本計畫的改動。
+- 所有新 UI 文案為中文，與現有風格一致；數字用 `U.compactCN` / `U.fmtUS`。
 
 ---
 
-### Task 1: 提交现有 WIP 基线
+### Task 1: 提交現有 WIP 基準線
 
 **Files:**
-- Modify: 无（仅提交现有工作树改动）
+- Modify: 無（僅提交現有工作樹改動）
 
-现有未提交改动（KPI 行 6→4 卡、donut <0.5% 过滤、TopModels 8→5、Gauge cache-metrics、对应 CSS）是用户当前看到的界面基线，先单独提交，避免与本计划的 diff 混在一起。
+現有未提交改動（KPI 行 6→4 卡、donut <0.5% 過滤、TopModels 8→5、Gauge cache-metrics、對應 CSS）是使用者當前看到的介面基準線，先單獨提交，避免與本計畫的 diff 混在一起。
 
-- [ ] **Step 1: 确认改动范围只有三个文件**
+- [ ] **Step 1: 確認改動範圍只有三個檔案**
 
 Run: `git status --short`
-Expected: `M src/client/dashboard/App.jsx`、`M src/client/dashboard/components-charts.jsx`、`M src/client/dashboard/styles.css`（`.superpowers/` 与 docs 之外无其它）。`?? .superpowers/` 不要提交。
+Expected: `M src/client/dashboard/App.jsx`、`M src/client/dashboard/components-charts.jsx`、`M src/client/dashboard/styles.css`（`.superpowers/` 與 docs 之外無其它）。`?? .superpowers/` 不要提交。
 
 - [ ] **Step 2: 提交**
 
@@ -42,16 +42,16 @@ git commit -m "feat: slim KPI row, cap top models at 5, donut tiny-slice filter,
 ### Task 2: pricing.mjs 新增 calculateCacheSavings（TDD）
 
 **Files:**
-- Modify: `src/pricing.mjs`（在 `calculateCost` 定义之后，约 195 行处新增导出函数）
-- Test: `test/pricing.test.mjs`（文件已存在，追加用例）
+- Modify: `src/pricing.mjs`（在 `calculateCost` 定義之後，約 195 行處新增匯出函式）
+- Test: `test/pricing.test.mjs`（檔案已存在，追加測試案例）
 
 **Interfaces:**
 - Consumes: 既有 `calculateCost(model, tokens, pricingData, provider, options)`。
-- Produces: `calculateCacheSavings(model, tokens, pricingData, provider = null) => number`，tokens 形如 `{ input, output, cacheRead, cacheWrite, reasoning }`（与 calculateCost 相同），返回 `max(0, 无缓存假设成本 − 实际估算成本)`，查不到定价时为 0。Task 3 的 server.mjs 依赖此签名。
+- Produces: `calculateCacheSavings(model, tokens, pricingData, provider = null) => number`，tokens 形如 `{ input, output, cacheRead, cacheWrite, reasoning }`（與 calculateCost 相同），回傳 `max(0, 無快取假設成本 − 實際估算成本)`，查不到定價時為 0。Task 3 的 server.mjs 相依此簽名。
 
-- [ ] **Step 1: 写失败测试**
+- [ ] **Step 1: 寫失敗測試**
 
-在 `test/pricing.test.mjs` 末尾追加（该文件已 `import { calculateCost } from '../src/pricing.mjs'`，把 import 改为同时引入 `calculateCacheSavings`）：
+在 `test/pricing.test.mjs` 末尾追加（該檔案已 `import { calculateCost } from '../src/pricing.mjs'`，把 import 改為同時引入 `calculateCacheSavings`）：
 
 ```js
 import { calculateCost, calculateCacheSavings } from '../src/pricing.mjs';
@@ -83,16 +83,16 @@ test('calculateCacheSavings is 0 with no cache tokens or unknown model', () => {
 });
 ```
 
-注意：若 fixture 的裸模型名查不到（`lookupPricing` 的候选生成不接受该形状），把 fixture 键换成 `anthropic/test-cache-model` 再试；两个用例的期望值不变。
+注意：若 fixture 的裸模型名查不到（`lookupPricing` 的候選生成不接受該形狀），把 fixture 鍵換成 `anthropic/test-cache-model` 再試；兩個測試案例的期望值不變。
 
-- [ ] **Step 2: 运行确认失败**
+- [ ] **Step 2: 執行確認失敗**
 
 Run: `npm test 2>&1 | tail -20`
-Expected: FAIL，`calculateCacheSavings is not a function` / SyntaxError（未导出）。
+Expected: FAIL，`calculateCacheSavings is not a function` / SyntaxError（未匯出）。
 
-- [ ] **Step 3: 实现**
+- [ ] **Step 3: 實作**
 
-`src/pricing.mjs`，紧跟 `calculateCost` 函数之后：
+`src/pricing.mjs`，緊跟 `calculateCost` 函式之後：
 
 ```js
 /**
@@ -114,10 +114,10 @@ export function calculateCacheSavings(model, tokens, pricingData, provider = nul
 }
 ```
 
-- [ ] **Step 4: 运行确认通过**
+- [ ] **Step 4: 執行確認透過**
 
 Run: `npm test 2>&1 | tail -20`
-Expected: 全部 PASS（含既有用例）。
+Expected: 全部 PASS（含既有測試案例）。
 
 - [ ] **Step 5: 提交**
 
@@ -131,21 +131,21 @@ git commit -m "feat: add calculateCacheSavings to pricing module"
 ### Task 3: /api/data daily 行附加 cacheSavedUSD
 
 **Files:**
-- Modify: `src/server.mjs`（头部 import、启动时加载 pricing、`/api/data` 的 daily 映射约 111-116 行）
+- Modify: `src/server.mjs`（頭部 import、啟動時載入 pricing、`/api/data` 的 daily 映射約 111-116 行）
 
 **Interfaces:**
 - Consumes: Task 2 的 `calculateCacheSavings(model, tokens, pricingData)`；既有 `loadPricing(cachePath)`。
-- Produces: `/api/data` 响应中每个 daily 行多一个数值字段 `cacheSavedUSD`（≥0）。Task 4 的 aggregateTotals、Task 7 的 Gauge 依赖它。
+- Produces: `/api/data` 回應中每個 daily 行多一個數值欄位 `cacheSavedUSD`（≥0）。Task 4 的 aggregateTotals、Task 7 的 Gauge 相依它。
 
-- [ ] **Step 1: 实现**
+- [ ] **Step 1: 實作**
 
-`src/server.mjs` 头部（`import { queryQuota }` 之后）：
+`src/server.mjs` 頭部（`import { queryQuota }` 之後）：
 
 ```js
 import { calculateCacheSavings, loadPricing } from './pricing.mjs';
 ```
 
-`const db = openDb(...)` 附近（模块顶层，文件已是 ESM 可用顶层 await）：
+`const db = openDb(...)` 附近（模組頂層，檔案已是 ESM 可用頂層 await）：
 
 ```js
 // Pricing data for serve-time cache-savings estimation. Same bundled cache
@@ -153,7 +153,7 @@ import { calculateCacheSavings, loadPricing } from './pricing.mjs';
 const pricingData = await loadPricing(resolve(process.cwd(), 'data', 'pricing-litellm.json'));
 ```
 
-`/api/data` 中 daily 映射改为：
+`/api/data` 中 daily 映射改為：
 
 ```js
       daily: rawDaily.map(d => ({
@@ -169,7 +169,7 @@ const pricingData = await loadPricing(resolve(process.cwd(), 'data', 'pricing-li
       })),
 ```
 
-- [ ] **Step 2: 启动服务验证字段**
+- [ ] **Step 2: 啟動服務驗證欄位**
 
 ```bash
 PORT=4599 node src/server.mjs & sleep 2
@@ -177,9 +177,9 @@ curl -s localhost:4599/api/data | node -e "let s='';process.stdin.on('data',d=>s
 kill %1
 ```
 
-Expected: `with savings` 数量 > 0，sample 的 cacheSavedUSD 为正数（claude 系模型应有值）。
+Expected: `with savings` 數量 > 0，sample 的 cacheSavedUSD 為正數（claude 系模型應有值）。
 
-- [ ] **Step 3: 回归 + 提交**
+- [ ] **Step 3: 迴歸 + 提交**
 
 Run: `npm test 2>&1 | tail -5` → PASS。
 
@@ -190,17 +190,17 @@ git commit -m "feat: serve per-row cacheSavedUSD in /api/data"
 
 ---
 
-### Task 4: aggregateTotals 汇总 cacheSavedUSD（TDD）
+### Task 4: aggregateTotals 匯總 cacheSavedUSD（TDD）
 
 **Files:**
-- Modify: `src/client/shared/utils.js`（`aggregateTotals`，约 192-214 行）
+- Modify: `src/client/shared/utils.js`（`aggregateTotals`，約 192-214 行）
 - Test: Create `test/client-utils.test.mjs`
 
 **Interfaces:**
 - Consumes: daily 行的 `cacheSavedUSD`（Task 3；行上可能缺省 → 按 0）。
-- Produces: `U.aggregateTotals(rows)` 返回对象新增 `cacheSavedUSD` 数值字段。Task 7 通过 `totals.cacheSavedUSD` 消费。
+- Produces: `U.aggregateTotals(rows)` 回傳物件新增 `cacheSavedUSD` 數值欄位。Task 7 透過 `totals.cacheSavedUSD` 消費。
 
-- [ ] **Step 1: 写失败测试**
+- [ ] **Step 1: 寫失敗測試**
 
 Create `test/client-utils.test.mjs`：
 
@@ -222,12 +222,12 @@ test('aggregateTotals sums cacheSavedUSD, defaulting missing values to 0', () =>
 });
 ```
 
-- [ ] **Step 2: 运行确认失败**
+- [ ] **Step 2: 執行確認失敗**
 
 Run: `node --test test/client-utils.test.mjs 2>&1 | tail -10`
-Expected: FAIL，`t.cacheSavedUSD` 为 undefined。（若 import 阶段因浏览器专用 API 报错，说明 utils.js 顶层引用了 document/window——按实际报错处理，函数体内引用不影响 import。）
+Expected: FAIL，`t.cacheSavedUSD` 為 undefined。（若 import 階段因瀏覽器專用 API 錯誤，說明 utils.js 頂層引用了 document/window——按實際錯誤處理，函式本體內引用不影響 import。）
 
-- [ ] **Step 3: 实现**
+- [ ] **Step 3: 實作**
 
 `aggregateTotals` 中：
 
@@ -259,7 +259,7 @@ function aggregateTotals(rows) {
 }
 ```
 
-- [ ] **Step 4: 运行确认通过**
+- [ ] **Step 4: 執行確認透過**
 
 Run: `npm test 2>&1 | tail -5`
 Expected: 全部 PASS。
@@ -273,19 +273,19 @@ git commit -m "feat: aggregate cacheSavedUSD in totals"
 
 ---
 
-### Task 5: 趋势图柱子去圆角
+### Task 5: 趨勢圖柱子去圓角
 
 **Files:**
-- Modify: `src/client/dashboard/components-charts.jsx`（TrendChart：删除 `topSourceByDate` useMemo 约 43-55 行；柱状 series 构建约 87-107 行）
+- Modify: `src/client/dashboard/components-charts.jsx`（TrendChart：刪除 `topSourceByDate` useMemo 約 43-55 行；柱狀 series 建置約 87-107 行）
 
 **Interfaces:**
-- Consumes/Produces: 无跨任务接口，纯内部改动。
+- Consumes/Produces: 無跨任務介面，純內部改動。
 
-- [ ] **Step 1: 实现**
+- [ ] **Step 1: 實作**
 
-删除整个 `topSourceByDate` useMemo（`const topSourceByDate = useMemo(...)` 到 `}, [byKey, dates, sources]);`）。
+刪除整個 `topSourceByDate` useMemo（`const topSourceByDate = useMemo(...)` 到 `}, [byKey, dates, sources]);`）。
 
-柱状/堆叠分支改为（不再有逐点 itemStyle / borderRadius）：
+柱狀/堆疊分支改為（不再有逐點 itemStyle / borderRadius）：
 
 ```js
   if (mode === 'stacked' || mode === 'bar') {
@@ -303,10 +303,10 @@ git commit -m "feat: aggregate cacheSavedUSD in totals"
   } else if (mode === 'line') {
 ```
 
-- [ ] **Step 2: 视觉验证**
+- [ ] **Step 2: 視覺驗證**
 
-Run: `npm run dev`（若未在跑），浏览器打开 http://localhost:5173。
-Expected: 堆叠/柱状模式下柱子四角均为直角；切换三种模式无报错。
+Run: `npm run dev`（若未在跑），瀏覽器開啟 http://localhost:5173。
+Expected: 堆疊/柱狀模式下柱子四角均為直角；切換三種模式無錯誤。
 
 - [ ] **Step 3: 提交**
 
@@ -317,19 +317,19 @@ git commit -m "fix: square bar corners in trend chart"
 
 ---
 
-### Task 6: 环形图方角 + 全部来源入环
+### Task 6: 圓環圖方角 + 全部來源入環
 
 **Files:**
-- Modify: `src/client/dashboard/components-charts.jsx`（SourceDonut 约 277-357 行）
+- Modify: `src/client/dashboard/components-charts.jsx`（SourceDonut 約 277-357 行）
 
 **Interfaces:**
-- Consumes/Produces: 无跨任务接口。
+- Consumes/Produces: 無跨任務介面。
 
-- [ ] **Step 1: 实现**
+- [ ] **Step 1: 實作**
 
-三处改动：
+三處改動：
 
-1. 删除 pieData 过滤及其注释（`// Tiny slices (<0.5%)...` 三行注释 + `const pieData = data.filter(...)`），series 的 `data:` 直接用 `data.map(...)`。
+1. 刪除 pieData 過滤及其註解（`// Tiny slices (<0.5%)...` 三行註解 + `const pieData = data.filter(...)`），series 的 `data:` 直接用 `data.map(...)`。
 2. series 的 `itemStyle` 去掉 `borderRadius: 8`：
 
 ```js
@@ -342,12 +342,12 @@ git commit -m "fix: square bar corners in trend chart"
       },
 ```
 
-3. `minAngle: 2` 保留不动。
+3. `minAngle: 2` 保留不動。
 
-- [ ] **Step 2: 视觉验证**
+- [ ] **Step 2: 視覺驗證**
 
-浏览器刷新，来源占比环形图。
-Expected: 4 个来源全部有扇区（Hermes Agent / OpenCode 为细小扇区但可见、可 hover 出 tooltip）；扇区为方角；12 点钟接缝处无叠色小圆点。
+瀏覽器重新整理，來源佔比圓環圖。
+Expected: 4 個來源全部有扇區（Hermes Agent / OpenCode 為細小扇區但可見、可 hover 出 tooltip）；扇區為方角；12 點鐘接縫處無疊色小圓點。
 
 - [ ] **Step 3: 提交**
 
@@ -358,35 +358,35 @@ git commit -m "fix: draw all sources in donut with square slice corners"
 
 ---
 
-### Task 7: 中间行等高 + 缓存卡节省费用 & 命中率 sparkline + 环比卡拉伸
+### Task 7: 中間行等高 + 快取卡節省費用 & 命中率 sparkline + 環比卡拉伸
 
 **Files:**
-- Modify: `src/client/dashboard/components-top.jsx`（607 行导出处）
-- Modify: `src/client/dashboard/components-charts.jsx`（import 行 9；Gauge 约 695-768 行；GrowthPanel 约 801-825 行）
-- Modify: `src/client/dashboard/App.jsx`（Dashboard 内新增 hitRateSeries useMemo；Gauge 调用处约 465-472 行）
-- Modify: `src/client/dashboard/styles.css`（Grid 段约 920-931 行后新增等高规则；Cache card 段 1188-1257 行重写）
+- Modify: `src/client/dashboard/components-top.jsx`（607 行匯出處）
+- Modify: `src/client/dashboard/components-charts.jsx`（import 行 9；Gauge 約 695-768 行；GrowthPanel 約 801-825 行）
+- Modify: `src/client/dashboard/App.jsx`（Dashboard 內新增 hitRateSeries useMemo；Gauge 呼叫處約 465-472 行）
+- Modify: `src/client/dashboard/styles.css`（Grid 段約 920-931 行後新增等高規則；Cache card 段 1188-1257 行重寫）
 
 **Interfaces:**
-- Consumes: `totals.cacheSavedUSD`（Task 4）；`Spark({ values, color, height, fill })`（components-top 既有组件）。
-- Produces: `Gauge` 新 props：`savedUSD`（number）、`hitRateSeries`（number[]，与 dates 对齐的百分比 0-100）。`Spark` 从 components-top.jsx 具名导出。
+- Consumes: `totals.cacheSavedUSD`（Task 4）；`Spark({ values, color, height, fill })`（components-top 既有元件）。
+- Produces: `Gauge` 新 props：`savedUSD`（number）、`hitRateSeries`（number[]，與 dates 對齊的百分比 0-100）。`Spark` 從 components-top.jsx 具名匯出。
 
-- [ ] **Step 1: 导出 Spark**
+- [ ] **Step 1: 匯出 Spark**
 
-`components-top.jsx` 最后一行改为：
+`components-top.jsx` 最後一行改為：
 
 ```js
 export { Topbar, FilterBar, KPI, Delta, Spark };
 ```
 
-`components-charts.jsx` 第 9 行改为：
+`components-charts.jsx` 第 9 行改為：
 
 ```js
 import { Delta, Spark } from './components-top.jsx';
 ```
 
-- [ ] **Step 2: 重写 Gauge 组件**
+- [ ] **Step 2: 重寫 Gauge 元件**
 
-替换整个 `Gauge` 函数：
+替換整個 `Gauge` 函式：
 
 ```jsx
 function Gauge({ rate, cacheRead, cacheCreation, total, prevRate, savedUSD, hitRateSeries }) {
@@ -398,7 +398,7 @@ function Gauge({ rate, cacheRead, cacheCreation, total, prevRate, savedUSD, hitR
     <div className="panel cache-card">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">缓存命中率</h2>
+          <h2 className="panel-title">快取命中率</h2>
           <p className="panel-sub">cache_read / total</p>
         </div>
         <Delta value={U.deltaPct(rate, prevRate)} />
@@ -431,14 +431,14 @@ function Gauge({ rate, cacheRead, cacheCreation, total, prevRate, savedUSD, hitR
       </div>
 
       <div className="cache-line">
-        <span><i className="cache-key cache-key-read"/>读取 <b>{U.compactCN(cacheRead)}</b></span>
-        <span><i className="cache-key cache-key-create"/>创建 <b>{U.compactCN(cacheCreation)}</b></span>
+        <span><i className="cache-key cache-key-read"/>讀取 <b>{U.compactCN(cacheRead)}</b></span>
+        <span><i className="cache-key cache-key-create"/>建立 <b>{U.compactCN(cacheCreation)}</b></span>
       </div>
 
       <div className="cache-saved">
-        <div className="cache-saved-label">缓存节省费用</div>
+        <div className="cache-saved-label">快取節省費用</div>
         <div className="cache-saved-num">≈ {U.fmtUS.format(savedUSD || 0)}</div>
-        <div className="cache-saved-sub">若无缓存需多付的估算金额</div>
+        <div className="cache-saved-sub">若無快取需多付的估算金額</div>
       </div>
 
       <div className="cache-trend">
@@ -452,21 +452,21 @@ function Gauge({ rate, cacheRead, cacheCreation, total, prevRate, savedUSD, hitR
 }
 ```
 
-（`total` prop 保留传入但不再展示"缓存占总 Token"进度条。）
+（`total` prop 保留傳入但不再展示"快取佔總 Token"進度條。）
 
-- [ ] **Step 3: GrowthPanel 拉伸填满**
+- [ ] **Step 3: GrowthPanel 拉伸填滿**
 
-`GrowthPanel` 的 stat 容器 div 改为：
+`GrowthPanel` 的 stat 容器 div 改為：
 
 ```jsx
       <div style={{display: 'flex', flexDirection: 'column', gap: 8, flex: 1, justifyContent: 'space-evenly'}}>
 ```
 
-峰值提示块的样式不动（保持 `marginTop: 14`）；只改上面这个 stat 容器，靠 `flex: 1` + `space-evenly` 把四个 stat 均匀拉开填满卡片高度。
+峰值提示塊的樣式不動（保持 `marginTop: 14`）；只改上面這個 stat 容器，靠 `flex: 1` + `space-evenly` 把四個 stat 均勻拉開填滿卡片高度。
 
-- [ ] **Step 4: App.jsx 传参**
+- [ ] **Step 4: App.jsx 傳參**
 
-Dashboard 组件内（`sparkBy` useMemo 之后）新增：
+Dashboard 元件內（`sparkBy` useMemo 之後）新增：
 
 ```js
   // Daily cache hit-rate series for the gauge card sparkline
@@ -483,7 +483,7 @@ Dashboard 组件内（`sparkBy` useMemo 之后）新增：
   }, [filtered, dates]);
 ```
 
-Gauge 调用处改为：
+Gauge 呼叫處改為：
 
 ```jsx
           <Gauge
@@ -496,9 +496,9 @@ Gauge 调用处改为：
             hitRateSeries={hitRateSeries} />
 ```
 
-- [ ] **Step 5: CSS — 等高 + 新卡片样式**
+- [ ] **Step 5: CSS — 等高 + 新卡片樣式**
 
-`styles.css` Grid 段（`.col-12 { ... }` 之后）新增：
+`styles.css` Grid 段（`.col-12 { ... }` 之後）新增：
 
 ```css
 /* Equal-height rows: stretch each panel to fill its grid cell */
@@ -506,7 +506,7 @@ Gauge 调用处改为：
 .grid > [class*="col-"] > .panel { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 ```
 
-Cache card 段：保留 `.cache-card`、`.cache-card .gauge`、`.cache-key`、`.cache-key-read`、`.cache-key-create`，删除 `.cache-metrics`、`.cache-metric-head`、`.cache-metric-label`、`.cache-metric-val`、`.cache-track`、`.cache-track-split`、`.cache-fill`、`.cache-fill-read`、`.cache-fill-total`、`.cache-metric-foot` 规则，新增：
+Cache card 段：保留 `.cache-card`、`.cache-card .gauge`、`.cache-key`、`.cache-key-read`、`.cache-key-create`，刪除 `.cache-metrics`、`.cache-metric-head`、`.cache-metric-label`、`.cache-metric-val`、`.cache-track`、`.cache-track-split`、`.cache-fill`、`.cache-fill-read`、`.cache-fill-total`、`.cache-metric-foot` 規則，新增：
 
 ```css
 .cache-line {
@@ -555,18 +555,18 @@ Cache card 段：保留 `.cache-card`、`.cache-card .gauge`、`.cache-key`、`.
 .cache-trend .kpi-spark { display: block; width: 100%; height: 36px; }
 ```
 
-注意 `.cache-card` 原有的 `display`/`flex` 定义（1189-1193 行）查看后与全局等高规则合并，避免重复或冲突（全局已给 `.panel` flex column，`.cache-card` 里只留它特有的规则）。
+注意 `.cache-card` 原有的 `display`/`flex` 定義（1189-1193 行）查看後與全域等高規則合併，避免重複或衝突（全域已給 `.panel` flex column，`.cache-card` 裡只留它特有的規則）。
 
-- [ ] **Step 6: 视觉验证**
+- [ ] **Step 6: 視覺驗證**
 
-浏览器刷新。
+瀏覽器重新整理。
 Expected:
-- Top 模型 / 缓存 / 环比三卡底边齐平，白卡填满整行高度，无底色露出。
-- 缓存卡自上而下：弧形表 → 读取/创建一行 → 「缓存节省费用 ≈ $xxx」绿色大数字（正数）→ 底部每日命中率 sparkline。
-- 切换筛选（来源/时间范围）时节省费用与 sparkline 联动变化。
-- 趋势图+环形图那一行也等高无异常；热力图/表格行无布局破坏。
+- Top 模型 / 快取 / 環比三卡底邊齊平，白卡填滿整行高度，無底色露出。
+- 快取卡自上而下：弧形錶 → 讀取/建立一行 → 「快取節省費用 ≈ $xxx」綠色大數字（正數）→ 底部每日命中率 sparkline。
+- 切換篩選（來源/時間範圍）時節省費用與 sparkline 聯動變化。
+- 趨勢圖+圓環圖那一行也等高無異常；熱力圖/表格行無佈局破壞。
 
-- [ ] **Step 7: 回归 + 提交**
+- [ ] **Step 7: 迴歸 + 提交**
 
 Run: `npm test 2>&1 | tail -5` → PASS。
 
@@ -577,18 +577,18 @@ git commit -m "feat: equal-height chart rows, cache savings stat and hit-rate sp
 
 ---
 
-### Task 8: 热力图响应式格子 + 小时分布 + 高峰时段
+### Task 8: 熱力圖響應式格子 + 小時分佈 + 高峰時段
 
 **Files:**
-- Modify: `src/client/dashboard/components-charts.jsx`（Heatmap 约 460-690 行）
+- Modify: `src/client/dashboard/components-charts.jsx`（Heatmap 約 460-690 行）
 - Modify: `src/client/dashboard/styles.css`（heatmap 段 1261-1341 行）
 
 **Interfaces:**
-- Consumes/Produces: 无跨任务接口。
+- Consumes/Produces: 無跨任務介面。
 
-- [ ] **Step 1: Heatmap JSX — 小时汇总与网格改造**
+- [ ] **Step 1: Heatmap JSX — 小時匯總與網格改造**
 
-`showMatrix`/`max` 计算之后新增：
+`showMatrix`/`max` 計算之後新增：
 
 ```js
   // Hour-of-day marginal distribution across the shown window
@@ -599,7 +599,7 @@ git commit -m "feat: equal-height chart rows, cache savings stat and hit-rate sp
   const peakHourIndex = hourTotals.indexOf(Math.max(...hourTotals));
 ```
 
-网格容器 inline style 改为（列轨道响应式、底部加 2 行放小时分布）：
+網格容器 inline style 改為（列軌道響應式、底部加 2 行放小時分佈）：
 
 ```jsx
               style={{
@@ -608,10 +608,10 @@ git commit -m "feat: equal-height chart rows, cache savings stat and hit-rate sp
               }}>
 ```
 
-在日期行渲染结束、tooltip 渲染之前插入小时分布行（gridRow = 日期行之后隔一行）：
+在日期行渲染結束、tooltip 渲染之前插入小時分佈行（gridRow = 日期行之後隔一行）：
 
 ```jsx
-              <div className="heat-row-label" style={{gridRow: showDates.length + 3, gridColumn: 1}}>时段</div>
+              <div className="heat-row-label" style={{gridRow: showDates.length + 3, gridColumn: 1}}>時段</div>
               {hourTotals.map((v, hi) => (
                 <div
                   key={`hb-${hi}`}
@@ -623,13 +623,13 @@ git commit -m "feat: equal-height chart rows, cache savings stat and hit-rate sp
               ))}
 ```
 
-- [ ] **Step 2: 活跃摘要新增「高峰时段」**
+- [ ] **Step 2: 活躍摘要新增「高峰時段」**
 
-`heat-stat-grid` 内（峰值日期 stat 之后）追加：
+`heat-stat-grid` 內（峰值日期 stat 之後）追加：
 
 ```jsx
             <div className="heat-stat" style={{gridColumn: '1 / -1'}}>
-              <span>高峰时段</span>
+              <span>高峰時段</span>
               <strong>{String(peakHourIndex).padStart(2, '0')}:00</strong>
               <small>{U.compactCN(hourTotals[peakHourIndex])} tokens</small>
             </div>
@@ -654,9 +654,9 @@ git commit -m "feat: equal-height chart rows, cache savings stat and hit-rate sp
 }
 ```
 
-（即 `.heatmap-main` 去掉 `justify-content: center`；`.heatmap-grid` 的 `width: max-content; margin: 0 auto;` 改为 `width: 100%`。）
+（即 `.heatmap-main` 去掉 `justify-content: center`；`.heatmap-grid` 的 `width: max-content; margin: 0 auto;` 改為 `width: 100%`。）
 
-`.heat-cell` 的尺寸规则拆开——基础类保留视觉样式，网格内改为自适应：
+`.heat-cell` 的尺寸規則拆開——基礎類保留視覺樣式，網格內改為自適應：
 
 ```css
 .heat-cell {
@@ -676,7 +676,7 @@ git commit -m "feat: equal-height chart rows, cache savings stat and hit-rate sp
 }
 ```
 
-新增小时分布条样式：
+新增小時分佈條樣式：
 
 ```css
 .heat-hour-bar {
@@ -694,16 +694,16 @@ git commit -m "feat: equal-height chart rows, cache savings stat and hit-rate sp
 .heat-hour-bar:hover > div { background: oklch(0.48 0.18 265); }
 ```
 
-- [ ] **Step 4: 视觉验证**
+- [ ] **Step 4: 視覺驗證**
 
-浏览器刷新，热力图区域。
+瀏覽器重新整理，熱力圖區域。
 Expected:
-- 网格横向撑满左栏（格子为扁矩形，宽>高），左右不再悬浮空白；窄窗口时出现横向滚动而不挤破。
-- 网格下方 24 根小柱与小时列对齐，hover 有 title 提示；晚间时段应明显更高。
-- 右侧摘要多一条「高峰时段 HH:00 · x tokens」，横跨两列。
-- 格子 hover tooltip 位置仍正确（tooltip 基于 cell rect 计算，自适应后应无偏移）。
+- 網格橫向撐滿左欄（格子為扁矩形，寬>高），左右不再懸浮空白；窄視窗時出現橫向滾動而不擠破。
+- 網格下方 24 根小柱與小時列對齊，hover 有 title 提示；晚間時段應明顯更高。
+- 右側摘要多一條「高峰時段 HH:00 · x tokens」，橫跨兩列。
+- 格子 hover tooltip 位置仍正確（tooltip 基於 cell rect 計算，自適應後應無偏移）。
 
-- [ ] **Step 5: 回归 + 提交**
+- [ ] **Step 5: 迴歸 + 提交**
 
 Run: `npm test 2>&1 | tail -5` → PASS。
 
@@ -714,25 +714,25 @@ git commit -m "feat: responsive heatmap cells with hour-of-day distribution"
 
 ---
 
-### Task 9: 端到端验证收尾
+### Task 9: 端到端驗證收尾
 
-**Files:** 无新改动（发现问题则就地修复并单独提交）。
+**Files:** 無新改動（發現問題則就地修復並單獨提交）。
 
-- [ ] **Step 1: 全量测试**
+- [ ] **Step 1: 全量測試**
 
 Run: `npm test 2>&1 | tail -10`
 Expected: 全部 PASS。
 
-- [ ] **Step 2: 完整视觉走查（对照 spec 的验证清单）**
+- [ ] **Step 2: 完整視覺走查（對照 spec 的驗證清單）**
 
-`npm run dev` 下逐项确认：
-1. 趋势图三种模式柱子直角、无 console 报错。
-2. 环形图 4 来源全画、方角、聚焦联动正常（点击图例聚焦/取消）。
-3. 中间行三卡等高；缓存节省费用为正且随筛选联动；sparkline 正常。
-4. 热力图撑满、小时分布对齐、高峰时段正确。
-5. 收窄浏览器窗口到 ~900px：各行退化为单列（既有响应式断点 1761-1763 行），无溢出。
+`npm run dev` 下逐項確認：
+1. 趨勢圖三種模式柱子直角、無 console 錯誤。
+2. 圓環圖 4 來源全畫、方角、聚焦聯動正常（點選圖例聚焦/取消）。
+3. 中間行三卡等高；快取節省費用為正且隨篩選聯動；sparkline 正常。
+4. 熱力圖撐滿、小時分佈對齊、高峰時段正確。
+5. 收窄瀏覽器視窗到 ~900px：各行退化為單列（既有響應式斷點 1761-1763 行），無溢出。
 
-- [ ] **Step 3: 确认工作树干净**
+- [ ] **Step 3: 確認工作樹乾淨**
 
 Run: `git status --short`
-Expected: 除 `.superpowers/` 外无未提交改动。
+Expected: 除 `.superpowers/` 外無未提交改動。
