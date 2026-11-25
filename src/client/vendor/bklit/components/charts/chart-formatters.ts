@@ -1,4 +1,4 @@
-export const shortDateFmt = new Intl.DateTimeFormat("zh-CN", {
+export const shortDateFmt = new Intl.DateTimeFormat("zh-TW", {
   month: "2-digit",
   day: "2-digit",
 });

@@ -76,7 +76,7 @@ async function collectLocal() {
 
     const dailyRows = normalizeDailyRows(graphJson, device);
     const sessionRows = normalizeSessionRows(modelsJson, device);
-    // 在完整批次上生成稳定 key，避免重复键编号随增量范围变化
+    // 在完整批次上產生穩定 key，避免重複鍵編號隨增量範圍變化
     const timeRows = dedupeEventKeys(normalizeTimeRows(eventsJson, device));
 
     const scope = { device, source: label };

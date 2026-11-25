@@ -23,14 +23,14 @@ const QUOTA_TOOL_ICON = { Claude: claudeIcon, Codex: gptIcon };
 function quotaResetText(iso) {
   if (!iso) return '';
   const ms = new Date(iso).getTime() - Date.now();
-  if (!Number.isFinite(ms) || ms <= 0) return '即将重置';
+  if (!Number.isFinite(ms) || ms <= 0) return '即將重置';
   const totalMin = Math.floor(ms / 60000);
   const d = Math.floor(totalMin / 1440);
   const h = Math.floor((totalMin % 1440) / 60);
   const m = totalMin % 60;
-  if (d > 0) return `${d}d${h}h 后重置`;
-  if (h > 0) return `${h}h${m}m 后重置`;
-  return `${m}m 后重置`;
+  if (d > 0) return `${d}d${h}h 後重置`;
+  if (h > 0) return `${h}h${m}m 後重置`;
+  return `${m}m 後重置`;
 }
 
 function QuotaWindowRow({ window }) {
@@ -73,11 +73,11 @@ function quotaDateTime(iso) {
 function quotaAccountRows(account) {
   if (!account) return [];
   const rows = [];
-  if (account.email) rows.push(['账号', account.email]);
+  if (account.email) rows.push(['帳號', account.email]);
   if (account.name) rows.push(['名称', account.name]);
   if (account.plan) rows.push(['套餐', account.plan]);
-  if (account.planUntil) rows.push(['订阅至', quotaDateOnly(account.planUntil) || account.planUntil]);
-  if (account.expiresAt) rows.push(['登录过期', quotaDateTime(account.expiresAt) || account.expiresAt]);
+  if (account.planUntil) rows.push(['訂閱至', quotaDateOnly(account.planUntil) || account.planUntil]);
+  if (account.expiresAt) rows.push(['登入過期', quotaDateTime(account.expiresAt) || account.expiresAt]);
   return rows;
 }
 
@@ -140,7 +140,7 @@ function QuotaBars({ quota }) {
     } else if (q.status && q.status !== 'no_credentials') {
       // Keep the card visible on a transient/expired error instead of vanishing.
       items.push(<QuotaItem key={key} tool={label} account={q.account}
-        error={q.status === 'expired' ? '登录已过期' : '暂时获取不到'} />);
+        error={q.status === 'expired' ? '登入已過期' : '暫時無法取得'} />);
     }
   }
   if (!items.length) return null;
@@ -158,24 +158,24 @@ function Topbar({ lastSync, onRefresh, refreshing, onCollect, collecting, collec
           <img className="dashboard-brand-mark" src={tokenStudioFlow} alt="Token Studio" />
           <div>
             <h1>Token Studio</h1>
-            <p className="brand-sub">个人 AI Token 消耗看板</p>
+            <p className="brand-sub">個人 AI Token 消耗看板</p>
           </div>
         </div>
         <div className="page-switch">
           <span className="page-chip active">看板</span>
-          <a href="/review" className="page-chip">复盘</a>
+          <a href="/review" className="page-chip">複盤</a>
         </div>
       </div>
       <div className="topbar-right">
         {collectStatus && (
           <div className={`collect-pill collect-${collectStatus.type}`} title={collectStatus.message}>
             <span className="collect-dot"></span>
-            <span>{collectStatus.type === 'running' ? '采集中' : collectStatus.type === 'ok' ? '采集完成' : '采集失败'}</span>
+            <span>{collectStatus.type === 'running' ? '採集中' : collectStatus.type === 'ok' ? '採集完成' : '採集失敗'}</span>
           </div>
         )}
         <div className="sync-pill">
           <span className="sync-dot"></span>
-          <span>最后同步 <strong style={{color:'var(--text)', fontWeight:600}}>{lastSync}</strong></span>
+          <span>最後同步 <strong style={{color:'var(--text)', fontWeight:600}}>{lastSync}</strong></span>
         </div>
         <ThemeToggle />
         <button className={`btn btn-primary ${collecting ? 'loading' : ''}`} onClick={onCollect} disabled={collecting || refreshing}>
@@ -183,7 +183,7 @@ function Topbar({ lastSync, onRefresh, refreshing, onCollect, collecting, collec
             <path d="M8 2.5v7.5M5 7.5 8 10.5l3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M2.75 11.75v1c0 .41.34.75.75.75h9c.41 0 .75-.34.75-.75v-1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
           </svg>
-          {collecting ? '采集中' : '采集'}
+          {collecting ? '採集中' : '採集'}
         </button>
         <button className={`btn ${refreshing ? 'loading' : ''}`} onClick={onRefresh}>
           <svg className={`icon ${refreshing ? 'spin' : ''}`} viewBox="0 0 16 16" fill="none" style={{opacity:1}}>
@@ -284,7 +284,7 @@ function FilterBar({ f, setF, allSources, sourceOptions, allDevices, allModels, 
       <div className="filterbar-main">
       <div className="filter-row filter-row-primary">
         <div className="filter-group">
-          <span className="filter-label" title={displayTimeZone()}>时间（{displayTimeZone()}）</span>
+          <span className="filter-label" title={displayTimeZone()}>時間（{displayTimeZone()}）</span>
           <LayoutGroup id="usage-date-range">
           <div className="chip-row motion-chip-row">
             {RANGES.map(r => (
@@ -309,7 +309,7 @@ function FilterBar({ f, setF, allSources, sourceOptions, allDevices, allModels, 
 
       <div className="filter-row filter-row-sources">
         <div className="filter-group filter-group-sources">
-          <span className="filter-label" title="当前时间、设备和模型条件下有 Token 的来源；已选无用量项保留以便取消">来源</span>
+          <span className="filter-label" title="目前時間、裝置和模型條件下有 Token 的來源；已選無用量項保留以便取消">來源</span>
           <AnimatePresence initial={false}>
           {sourceOptions.map(({ source: s, hasUsage }) => (
             <motion.button key={s} layout="position"
@@ -319,7 +319,7 @@ function FilterBar({ f, setF, allSources, sourceOptions, allDevices, allModels, 
               transition={{ duration: reduceMotion ? 0 : 0.22 }}
               whileTap={{ scale: reduceMotion ? 1 : 0.97 }}
               className={`pill ${f.sources.has(s) ? 'active' : ''}`}
-              title={hasUsage ? `${s} · 当前筛选下有用量` : `${s} · 当前筛选下无用量，点击取消选择`}
+              title={hasUsage ? `${s} · 目前篩選下有用量` : `${s} · 目前篩選下無用量，點選取消選擇`}
               aria-pressed={f.sources.has(s)}
               style={f.sources.has(s) ? {color: U.PALETTE[s] || ''} : {}}
               onClick={() => toggleSet('sources', s)}>
@@ -327,22 +327,22 @@ function FilterBar({ f, setF, allSources, sourceOptions, allDevices, allModels, 
                 ? <img className="pill-icon" src={sourceIcon(s)} alt="" style={{ transform: `scale(${sourceIconScale(s)})` }} />
                 : <span className="pill-dot" style={{background: U.PALETTE[s] || ''}}/>}
               {s}
-              {!hasUsage && <span className="source-empty-note">无用量</span>}
+              {!hasUsage && <span className="source-empty-note">無用量</span>}
             </motion.button>
           ))}
           </AnimatePresence>
-          {allSources.length === 0 && <span className="muted">当前筛选下暂无用量</span>}
+          {allSources.length === 0 && <span className="muted">目前篩選下暫無用量</span>}
         </div>
       </div>
 
       <div className="filter-row filter-row-secondary">
         <div className="filter-group">
-          <span className="filter-label">设备</span>
+          <span className="filter-label">裝置</span>
           <MultiSelect
             options={allDevices}
             selected={f.devices}
             onChange={v => setF({...f, devices: v})}
-            placeholder="全部设备"/>
+            placeholder="全部裝置"/>
           <span className="filter-label" style={{marginLeft: 4}}>模型</span>
           <MultiSelect
             options={allModels}
@@ -358,18 +358,18 @@ function FilterBar({ f, setF, allSources, sourceOptions, allDevices, allModels, 
             <svg className="icon" viewBox="0 0 16 16" fill="none">
               <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
             </svg>
-            清除筛选 · {filtersActive}
+            清除篩選 · {filtersActive}
           </button>
         )}
         <button className={`toggle ${f.compare ? 'on' : ''}`} onClick={() => setF({...f, compare: !f.compare})}>
           <span className="toggle-slot"/>
-          对比上一周期
+          對比上一週期
         </button>
         <details className="export-menu" ref={exportRef}>
-          <summary className="btn">导出 CSV ▾</summary>
+          <summary className="btn">匯出 CSV ▾</summary>
           <div className="export-options">
-            <button className="btn" disabled={exportDisabled} onClick={event => { onExport(); event.currentTarget.closest('details').open = false; }}>用量明细</button>
-            <button className="btn" disabled={exportDisabled} onClick={event => { onExportTrend(); event.currentTarget.closest('details').open = false; }}>每日趋势</button>
+            <button className="btn" disabled={exportDisabled} onClick={event => { onExport(); event.currentTarget.closest('details').open = false; }}>用量明細</button>
+            <button className="btn" disabled={exportDisabled} onClick={event => { onExportTrend(); event.currentTarget.closest('details').open = false; }}>每日趨勢</button>
           </div>
         </details>
         </div>
@@ -437,9 +437,9 @@ function DateRangeField({ start, end, precise, onChange }) {
         <svg className="time-icon" viewBox="0 0 16 16" fill="none">
           <path d="M4 2.5v2M12 2.5v2M3 6.5h10M4 4h8c.83 0 1.5.67 1.5 1.5v6c0 .83-.67 1.5-1.5 1.5H4c-.83 0-1.5-.67-1.5-1.5v-6C2.5 4.67 3.17 4 4 4Z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
         </svg>
-        <span>{start || '开始'}</span>
+        <span>{start || '開始'}</span>
         <span className="time-sep">~</span>
-        <span>{end || '结束'}</span>
+        <span>{end || '結束'}</span>
       </button>
 
       {open && (
@@ -468,7 +468,7 @@ function DateRangeField({ start, end, precise, onChange }) {
               );
             })}
           </div>
-          <div className="dt-range-hint">{anchor ? '再点一下选择结束日期' : '点击选择开始日期'}</div>
+          <div className="dt-range-hint">{anchor ? '再點一下選擇結束日期' : '點選以選擇開始日期'}</div>
         </div>
       )}
     </div>
@@ -510,7 +510,7 @@ function MultiSelect({ options, selected, onChange, placeholder }) {
     ? placeholder
     : selected.size === 1
       ? Array.from(selected)[0]
-      : `${selected.size} 项已选`;
+      : `${selected.size} 項已選`;
 
   const toggle = (v) => {
     const next = new Set(selected);
@@ -537,7 +537,7 @@ function MultiSelect({ options, selected, onChange, placeholder }) {
         }}>
           {selected.size > 0 && (
             <button className="chip" style={{width:'100%', justifyContent:'flex-start', color: 'var(--c-indigo)', fontSize: 11.5}}
-              onClick={() => onChange(new Set())}>清除选择</button>
+              onClick={() => onChange(new Set())}>清除選擇</button>
           )}
           {options.map(o => (
             <button key={o} className="chip"
@@ -620,10 +620,10 @@ function Delta({ value, suffix = '%', invert = false }) {
 function KPI({ label, value, numericValue, format = U.compactCN, sub, delta, dotColor, sparkValues, sparkColor, notice }) {
   const reduceMotion = useReducedMotion();
   const explanation = {
-    '总 Token': '汇总采集记录中的总量，可能包含缓存和未细分用量。不要把所有展示项再次相加。',
-    '输出': '模型生成的输出用量。部分工具的推理 Token 已包含在输出中，不重复累加。',
-    '缓存': '缓存读取 + 缓存创建。命中率为缓存读取 ÷ 总 Token。',
-    '估算费用': '已有记录的费用汇总，可能来自工具记录或估价，不等同于实际账单或订阅支出。更新价格不会自动重算历史费用。'
+    '總 Token': '匯總採集記錄中的總量，可能包含快取和未細分用量。不要把所有展示項再次相加。',
+    '輸出': '模型生成的輸出用量。部分工具的推理 Token 已包含在輸出中，不重複累加。',
+    '快取': '快取讀取 + 快取建立。命中率為快取讀取 ÷ 總 Token。',
+    '估算費用': '已有記錄的費用匯總，可能來自工具記錄或估價，不等同於實際帳單或訂閱支出。更新價格不會自動重算歷史費用。'
   }[label];
   return (
     <motion.div className="kpi"
@@ -640,7 +640,7 @@ function KPI({ label, value, numericValue, format = U.compactCN, sub, delta, dot
       <div className="kpi-value">{Number.isFinite(numericValue)
         ? <AnimatedNumber value={numericValue} format={format} /> : value}</div>
       <div className="kpi-sub">
-        {delta != null && (label === '估算费用' ? <span className="cost-change">{delta > 0 ? '+' : ''}{delta.toFixed(1)}%</span> : <Delta value={delta}/>)}
+        {delta != null && (label === '估算費用' ? <span className="cost-change">{delta > 0 ? '+' : ''}{delta.toFixed(1)}%</span> : <Delta value={delta}/>)}
         <span>{sub}</span>
       </div>
       {notice && <div className="price-notice">{notice}</div>}

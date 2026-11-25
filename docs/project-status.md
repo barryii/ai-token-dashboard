@@ -1,103 +1,103 @@
-# 项目状态与后续工作
+# 專案狀態與後續工作
 
-更新日期：2026-10-04。增量同步及页面优化见 [PR #30](https://github.com/fengguanghuai/ai-token-dashboard/pull/30)；可选日志字节续读与固定快照导出见 [PR #31](https://github.com/fengguanghuai/ai-token-dashboard/pull/31)；发布准备与合成查询基准见 [PR #32](https://github.com/fengguanghuai/ai-token-dashboard/pull/32)。代码、验证与合并状态以对应 PR 为准，不代表已部署。
+更新日期：2026-10-04。增量同步及頁面最佳化見 [PR #30](https://github.com/fengguanghuai/ai-token-dashboard/pull/30)；可選日誌位元組續讀與固定快照匯出見 [PR #31](https://github.com/fengguanghuai/ai-token-dashboard/pull/31)；發布準備與合成查詢基準見 [PR #32](https://github.com/fengguanghuai/ai-token-dashboard/pull/32)。程式碼、驗證與合併狀態以對應 PR 為準，不代表已部署。
 
-本文件是当前待办与完成状态的统一入口。性能文档记录实现边界和测量证据，历史计划保留方案演变，不作为当前执行清单。这里的“完成”只针对该项验收范围，不代表整个项目不存在问题。
+本檔案是當前待辦與完成狀態的統一入口。效能文件記錄實作邊界和測量證據，歷史計畫保留方案演變，不作為當前執行清單。這裡的「完成」只針對該項驗收範圍，不代表整個專案不存在問題。
 
-## 原始四项待办
+## 原始四項待辦
 
-| 编号 | 原始目标 | 当前状态 | 证据与未完成边界 |
+| 編號 | 原始目標 | 當前狀態 | 證據與未完成邊界 |
 | --- | --- | --- | --- |
-| START-01 | 启动端口检查与友好提示 | 已完成 | [PR #24](https://github.com/fengguanghuai/ai-token-dashboard/pull/24)、[启动脚本](../src/dev.mjs)：启动子进程前探测端口，冲突时给出提示。 |
-| QUERY-01 | 精确时间查询聚合、明细按需分页 | 已完成 | [PR #24](https://github.com/fengguanghuai/ai-token-dashboard/pull/24)、[查询说明](query-performance.md)：统计基于完整选定范围，事件详情按页加载。 |
-| SYNC-01 | 同步读取变更记录，避免完整快照比较 | 已完成 | [PR #30](https://github.com/fengguanghuai/ai-token-dashboard/pull/30)：[变更记录](../src/sync-journal.mjs)与用量同事务；[同步](../src/sync.mjs)按目标、设备、来源保存确认进度。首次基线后只读取变化记录，支持历史修正、重试、显式范围替换和慢目标保留；三库契约测试通过。 |
-| READ-01 | 日志从上次位置续读，避免重读变化的大文件 | 部分完成；Codex、Claude 有可选模式 | Codex 见 [PR #31](https://github.com/fengguanghuai/ai-token-dashboard/pull/31)，Claude 见 [PR #33](https://github.com/fengguanghuai/ai-token-dashboard/pull/33)，分别使用 `CODEX_LOG_APPEND_ONLY=1` / `CLAUDE_LOG_APPEND_ONLY=1`。默认完整读取变化文件；可选模式仅读新增字节及未完成行，不能检测历史中部改写后增长，其余来源尚未支持。 |
+| START-01 | 啟動連線埠檢查與友善提示 | 已完成 | [PR #24](https://github.com/fengguanghuai/ai-token-dashboard/pull/24)、[啟動腳本](../src/dev.mjs)：啟動子行程前探測連線埠，衝突時給出提示。 |
+| QUERY-01 | 精確時間查詢聚合、明細按需分頁 | 已完成 | [PR #24](https://github.com/fengguanghuai/ai-token-dashboard/pull/24)、[查詢說明](query-performance.md)：統計基於完整選定範圍，事件詳情按頁載入。 |
+| SYNC-01 | 同步讀取變更記錄，避免完整快照比較 | 已完成 | [PR #30](https://github.com/fengguanghuai/ai-token-dashboard/pull/30)：[變更記錄](../src/sync-journal.mjs)與用量同交易；[同步](../src/sync.mjs)按目標、裝置、來源儲存確認進度。首次基線後唯讀取變化記錄，支援歷史修正、重試、明確範圍替換和慢目標保留；三庫契約測試通過。 |
+| READ-01 | 日誌從上次位置續讀，避免重讀變化的大檔案 | 部分完成；Codex、Claude 有可選模式 | Codex 見 [PR #31](https://github.com/fengguanghuai/ai-token-dashboard/pull/31)，Claude 見 [PR #33](https://github.com/fengguanghuai/ai-token-dashboard/pull/33)，分別使用 `CODEX_LOG_APPEND_ONLY=1` / `CLAUDE_LOG_APPEND_ONLY=1`。預設完整讀取變化檔案；可選模式僅讀新增位元組及未完成行，不能偵測歷史中部改寫後增長，其餘來源尚未支援。 |
 
-**计数：3 项完成、1 项部分完成。** 页面“上一周期对比”和多设备“同步比较”是不同功能，不能用 QUERY-01 或 PR #26 代替 SYNC-01 的完成证据。
+**計數：3 項完成、1 項部分完成。** 頁面「上一週期對比」和多裝置「同步比較」是不同功能，不能用 QUERY-01 或 PR #26 代替 SYNC-01 的完成證據。
 
-## 其他已交付内容
+## 其他已交付內容
 
-| 内容 | 合并证据 | 范围 |
+| 內容 | 合併證據 | 範圍 |
 | --- | --- | --- |
-| 用量可靠性、费用保留与恢复规则 | [PR #20](https://github.com/fengguanghuai/ai-token-dashboard/pull/20) | 具体语义见[费用与升级说明](usage-accuracy.md)；不将历史估算宣称为已还原账单。 |
-| 开发模式采集请求的来源校验兼容 | [PR #21](https://github.com/fengguanghuai/ai-token-dashboard/pull/21) | Vite 代理保留浏览器请求来源。 |
-| 采集缓存、变化日期核对和完成通知 | [PR #22](https://github.com/fengguanghuai/ai-token-dashboard/pull/22)、[PR #23](https://github.com/fengguanghuai/ai-token-dashboard/pull/23) | 见[采集性能](collection-performance.md)。这是本地采集优化，不是 SYNC-01 的同步变更序列。 |
-| 诊断命令与首次使用冒烟测试 | [PR #25](https://github.com/fengguanghuai/ai-token-dashboard/pull/25) | `npm run doctor`、`npm run test:onboarding`；见[诊断说明](doctor.md)。 |
-| 普通首页和复盘按日期查询 | [PR #26](https://github.com/fengguanghuai/ai-token-dashboard/pull/26) | 包含对比周期、全局筛选选项、有限缓存和请求取消；“全部”仍查询全部历史汇总。 |
-| 用量 CSV 流式导出、移除首页历史口径横幅 | [PR #28](https://github.com/fengguanghuai/ai-token-dashboard/pull/28) | 服务端分批输出，下载由浏览器管理；帮助说明和历史费用保留。不是事务快照导出。 |
+| 用量可靠性、費用保留與還原規則 | [PR #20](https://github.com/fengguanghuai/ai-token-dashboard/pull/20) | 具體語意見[費用與升級說明](usage-accuracy.md)；不將歷史估算宣稱為已還原帳單。 |
+| 開發模式採集請求的來源校驗相容 | [PR #21](https://github.com/fengguanghuai/ai-token-dashboard/pull/21) | Vite 代理保留瀏覽器請求來源。 |
+| 採集快取、變化日期核對和完成通知 | [PR #22](https://github.com/fengguanghuai/ai-token-dashboard/pull/22)、[PR #23](https://github.com/fengguanghuai/ai-token-dashboard/pull/23) | 見[採集效能](collection-performance.md)。這是本地採集最佳化，不是 SYNC-01 的同步變更序列。 |
+| 診斷指令與首次使用冒煙測試 | [PR #25](https://github.com/fengguanghuai/ai-token-dashboard/pull/25) | `npm run doctor`、`npm run test:onboarding`；見[診斷說明](doctor.md)。 |
+| 普通首頁和複盤按日期查詢 | [PR #26](https://github.com/fengguanghuai/ai-token-dashboard/pull/26) | 包含對比週期、全域篩選選項、有限快取和請求取消；「全部」仍查詢全部歷史彙總。 |
+| 用量 CSV 串流匯出、移除首頁歷史口徑橫幅 | [PR #28](https://github.com/fengguanghuai/ai-token-dashboard/pull/28) | 伺服器端分批輸出，下載由瀏覽器管理；幫助說明和歷史費用保留。不是交易快照匯出。 |
 
-截至基线，以上 PR 的合并提交均在 Git 历史中。历史测试与基准结果只适用于当时版本和样本。
+截至基線，以上 PR 的合併提交均在 Git 歷史中。歷史測試與基準結果只適用於當時版本和樣本。
 
-## 本轮高收益优化
+## 本輪高收益最佳化
 
-[PR #30](https://github.com/fengguanghuai/ai-token-dashboard/pull/30) 按用户确认顺序实现；验收边界见[查询性能](query-performance.md)和[同步性能](collection-performance.md)。
+[PR #30](https://github.com/fengguanghuai/ai-token-dashboard/pull/30) 按使用者確認順序實作；驗收邊界見[查詢效能](query-performance.md)和[同步效能](collection-performance.md)。
 
-| 编号 | 范围 | 代码与验证 |
+| 編號 | 範圍 | 程式碼與驗證 |
 | --- | --- | --- |
-| TZ-01 | 页面与服务端时区一致 | `/api/config`、`display-time.js`；覆盖跨月、DST、明细、对比与导出范围。已有日汇总不自动重建。 |
-| ASSET-01 | 静态资源与路由加载 | gzip、ETag、HEAD、私有缓存；首页与复盘独立加载，认证先于缓存判断。 |
-| QUOTA-01 | 合并额度并发请求 | `request-cache.mjs`；共享进行中的调用，保留成功/错误两种 TTL，失败可重试。 |
-| HOURLY-01 | 复用重复小时统计 | 10 秒有限缓存，以数据库来源修订号失效；外部连接写入由集成测试验证。 |
-| BROWSER-01 | 可重复的浏览器回归 | `npm run test:browser`，临时 SQLite、合成数据、跨时区 Chromium；独立 CI job。 |
+| TZ-01 | 頁面與伺服器端時區一致 | `/api/config`、`display-time.js`；涵蓋跨月、DST、明細、對比與匯出範圍。已有日彙總不自動重建。 |
+| ASSET-01 | 靜態資源與路由載入 | gzip、ETag、HEAD、私有快取；首頁與複盤獨立載入，認證先於快取判斷。 |
+| QUOTA-01 | 合併額度並行請求 | `request-cache.mjs`；共享進行中的呼叫，保留成功/錯誤兩種 TTL，失敗可重試。 |
+| HOURLY-01 | 重複小時統計的複用 | 10 秒有限快取，以資料庫來源修訂號失效；外部連線寫入由整合測試驗證。 |
+| BROWSER-01 | 可重複的瀏覽器迴歸 | `npm run test:browser`，暫時 SQLite、合成資料、跨時區 Chromium；獨立 CI job。 |
 
-## 原始验收记录与后续顺序
+## 原始驗收記錄與後續順序
 
-### 1. SYNC-01：事务变更记录与确认进度
+### 1. SYNC-01：交易變更記錄與確認進度
 
-当前实现使用持久化变更记录和每个目标端独立的确认进度，替代常规同步的完整快照哈希比较。SQLite 本地契约测试及 CI 中 PostgreSQL/MySQL 的同一契约均通过。独立数据库副本测得无变化同步约 2 ms，旧方式约 409–417 ms；1 条历史修正只读取并发送 1 条变化，历史金额未重新计算。
+當前實作使用持久化變更記錄和每個目標端獨立的確認進度，替代常規同步的完整快照雜湊比較。SQLite 本地契約測試及 CI 中 PostgreSQL/MySQL 的同一契約均通過。獨立資料庫副本測得無變化同步約 2 ms，舊方式約 409–417 ms；1 條歷史修正唯讀取並行送 1 條變化，歷史金額未重新計算。
 
-完成条件：
+完成條件：
 
-- 用量写入与变更记录同事务提交；覆盖采集、导入、恢复和显式全量替换等写入入口。
-- 首次同步建立基线后，无变化和少量变化的常规同步不读取整个用量快照，不重新散列全部历史，也不重写整份历史行确认清单。
-- 确认进度按目标地址、设备和必要的来源范围隔离；只在远端确认后推进。部分失败、响应丢失、重启重试不丢记录，重放保持幂等。
-- 补入旧记录、历史记录更新和显式范围替换都能传递；不能仅依赖最大事件时间。清理变更记录时保留慢目标的恢复路径。
-- SQLite、PostgreSQL、MySQL 测试通过；与完整同步逐项核对事件、Token 和已有费用，并记录无变化/少量变化场景的读取行数与耗时。
+- 用量寫入與變更記錄同交易提交；涵蓋採集、匯入、還原和明確全量替換等寫入入口。
+- 首次同步建立基線後，無變化和少量變化的常規同步不讀取整個用量快照，不重新雜湊全部歷史，也不重寫整份歷史行確認清單。
+- 確認進度按目標位址、裝置和必要的來源範圍隔離；只在遠端確認後推進。部分失敗、回應丟失、重啟重試不丟記錄，重放保持冪等。
+- 補入舊記錄、歷史記錄更新和明確範圍替換都能傳遞；不能僅相依套件最大事件時間。清理變更記錄時保留慢目標的還原路徑。
+- SQLite、PostgreSQL、MySQL 測試通過；與完整同步逐項核對事件、Token 和已有費用，並記錄無變化/少量變化情境的讀取行數與耗時。
 
-### 2. READ-01：有明确可靠性边界的字节续读
+### 2. READ-01：有明確可靠性邊界的位元組續讀
 
-Codex 为首个支持来源，现已扩展到 Claude；其他采集器单独记录支持范围。现有解析状态、累计用量、fork 重放和跨文件去重语义必须保留。
+Codex 為首個支援來源，現已擴展到 Claude；其他採集器單獨記錄支援範圍。現有解析狀態、累計用量、fork 重放和跨檔案去重語意必須保留。
 
-2026-10-04 用户确认保留默认完整校验、增加可选只追加模式。该模式已覆盖重启续读、文件身份变化、可观察截断、同大小改写、半行、UTF-8 分割、缓存损坏和模式切换。64 MiB 合成日志追加 157 字节，仅读取 157 字节；结果与完整校验一致。原始目标继续标为部分完成，因为通用日志的“历史改写检测”和“跳过旧字节”不能同时保证。具体启用方式与测试边界见[采集性能](collection-performance.md#codex-可选字节续读)。
+2026-10-04 使用者確認保留預設完整校驗、增加可選只追加模式。該模式已涵蓋重啟續讀、檔案身份變化、可觀察截斷、同大小改寫、半行、UTF-8 分割、快取損壞和模式切換。64 MiB 合成日誌追加 157 位元組，僅讀取 157 位元組；結果與完整校驗一致。原始目標繼續標為部分完成，因為通用日誌的「歷史改寫偵測」和「跳過舊位元組」不能同時保證。具體啟用方式與測試邊界見[採集效能](collection-performance.md#codex-可選位元組續讀)。
 
-后续扩展到 Claude JSONL，默认仍完整解析变化文件。检查点保存原始用量快照和绝对行号，续读后重新合并响应，保留迟到的流式修正、advisor 和 sidechain 去重。没有修改共享字节读取器或数据库费用逻辑；重复快照较多时缓存可能增大，详见 [Claude 续读边界](collection-performance.md#claude-可选字节续读)。
+後續擴展到 Claude JSONL，預設仍完整解析變化檔案。檢查點儲存原始用量快照和絕對行號，續讀後重新合併回應，保留遲到的串流修正、advisor 和 sidechain 去重。沒有修改共享位元組讀取器或資料庫費用邏輯；重複快照較多時快取可能增大，詳見 [Claude 續讀邊界](collection-performance.md#claude-可選位元組續讀)。
 
-本地 190 项测试和发布验收通过；2 项远程库测试由 CI 验证，跨平台、浏览器和远程结果见 [PR #33 CI](https://github.com/fengguanghuai/ai-token-dashboard/pull/33/checks)。开关保持默认关闭，未修改现有服务配置。
+本地 190 項測試和發布驗收通過；2 項遠端資料庫測試由 CI 驗證，跨平台、瀏覽器和遠端結果見 [PR #33 CI](https://github.com/fengguanghuai/ai-token-dashboard/pull/33/checks)。開關保持預設關閉，未修改現有服務設定。
 
-完成条件：
+完成條件：
 
-- 明确哪些日志可以认定为只追加，以及无法确认时的回退策略。仅靠文件大小、时间戳或头尾抽样，不能保证发现历史中部改写。
-- 在确认支持的追加场景中，读取量随新增字节增长，不再为每次追加读取完整旧前缀；用实际读取字节数验证，不只测 JSON 解析耗时。
-- 覆盖进程重启、文件替换/轮转、截断、半行 JSON、UTF-8 半字符、缓存损坏和版本变化；结果与完整解析一致。
-- 若无法在保证所需正确性的前提下跳过旧内容校验，保持“部分完成”，记录限制；不能用重命名或缩小验收口径宣称原始目标完成。
-- 测试与基准明确区分读取、解析、整次采集耗时和峰值内存。
+- 明確哪些日誌可以認定為只追加，以及無法確認時的後備策略。僅靠檔案大小、時間戳記或頭尾抽樣，不能保證發現歷史中部改寫。
+- 在確認支援的追加情境中，讀取量隨新增位元組增長，不再為每次追加讀取完整舊前綴；用實際讀取位元組數驗證，不只測 JSON 解析耗時。
+- 涵蓋行程重啟、檔案替換/輪轉、截斷、半行 JSON、UTF-8 半字元、快取損壞和版本變化；結果與完整解析一致。
+- 若無法在保證所需正確性的前提下跳過舊內容校驗，保持「部分完成」，記錄限制；不能用重新命名或縮小驗收口徑宣稱原始目標完成。
+- 測試與基準明確區分讀取、解析、整次採集耗時和峰值記憶體。
 
-### 3. EXPORT-02：固定快照导出（已实现）
+### 3. EXPORT-02：固定快照匯出（已實作）
 
-新增固定快照导出：在数据库只读一致性快照内按页生成私有临时 CSV，提交并释放连接后再开始下载。SQLite 使用独立只读连接，PostgreSQL/MySQL 使用可重复读事务。并发替换来源时，导出各页仍对应同一版本；慢下载不持有数据库事务。验证覆盖取消、查询失败、临时文件清理与三库同一契约，远程库由 CI 验证。见 [PR #31](https://github.com/fengguanghuai/ai-token-dashboard/pull/31) 和[导出边界](query-performance.md#csv-导出边界)。
+新增固定快照匯出：在資料庫唯讀一致性快照內按頁產生私有暫時 CSV，提交並釋放連線後再開始下載。SQLite 使用獨立唯讀連線，PostgreSQL/MySQL 使用可重複讀交易。並行替換來源時，匯出各頁仍對應同一版本；慢下載不持有資料庫交易。驗證涵蓋取消、查詢失敗、暫時檔案清理與三庫同一契約，遠端資料庫由 CI 驗證。見 [PR #31](https://github.com/fengguanghuai/ai-token-dashboard/pull/31) 和[匯出邊界](query-performance.md#csv-匯出邊界)。
 
-验收：并发写入时，导出仍对应同一版本；内存保持有界；取消、失败和临时资源清理可靠；慢速下载不长期占用写事务。实现方案需同时考虑三种数据库。
+驗收：並行寫入時，匯出仍對應同一版本；記憶體保持有界；取消、失敗和暫時資源清理可靠；慢速下載不長期佔用寫交易。實作方案需同時考慮三種資料庫。
 
-### 4. RELEASE-01：公开版本准备（验收流程与文档已补齐）
+### 4. RELEASE-01：公開版本準備（驗收流程與文件已補齊）
 
-已有中英文 README、MIT 许可证、诊断命令和跨平台 CI，应在这些基础上补充，避免重复搭建。
+已有中英文 README、MIT 授權條款、診斷指令和跨平台 CI，應在這些基礎上補充，避免重複搭建。
 
-本轮新增 [Unreleased 版本说明](../CHANGELOG.md)、[升级/回退和支持边界](release.md)、[贡献与反馈入口](../CONTRIBUTING.md)，以及 `npm run test:release`。它复用首次安装冒烟，再用 PR #30 前的冻结 SQLite schema 验证备份、升级、历史字段保留、同步、重启和恢复；三平台 CI 执行同一流程。它不验证任意旧库或远程生产备份，具体限制见升级文档。目标提交的 CI 通过与实际发布分别以 PR / Release 证据为准，当前仍标记 Unreleased。
+本輪新增 [Unreleased 版本說明](../CHANGELOG.md)、[升級/退回和支援邊界](release.md)、[貢獻與回饋入口](../CONTRIBUTING.md)，以及 `npm run test:release`。它重複使用首次安裝冒煙，再用 PR #30 前的凍結 SQLite schema 驗證備份、升級、歷史欄位保留、同步、重啟和還原；三平台 CI 執行同一流程。它不驗證任意舊庫或遠端生產備份，具體限制見升級文件。目標提交的 CI 通過與實際發布分別以 PR / Release 證據為準，當前仍標記 Unreleased。
 
-本地 macOS arm64 / Node 22.22.2 验收：从提交 `9aa2221` 的干净归档安装 `npm ci`，`npm run test:release` 通过；工作区 `npm test` 为 188 通过、2 个远程库测试跳过。跨平台、远程库和浏览器结果见 [PR #32 CI](https://github.com/fengguanghuai/ai-token-dashboard/pull/32/checks)。
+本地 macOS arm64 / Node 22.22.2 驗收：從提交 `9aa2221` 的乾淨封存安裝 `npm ci`，`npm run test:release` 通過；工作目錄 `npm test` 為 188 通過、2 個遠端資料庫測試跳過。跨平台、遠端資料庫和瀏覽器結果見 [PR #32 CI](https://github.com/fengguanghuai/ai-token-dashboard/pull/32/checks)。
 
-验收：形成版本说明、升级/回退与已知限制说明、贡献及问题反馈入口；对拟发布版本完成全新安装和升级验收；确认文档描述的采集器与平台支持范围。准备完成与实际发布分别记录，不能把 `package.json` 的版本号当成已发布证据。
+驗收：形成版本說明、升級/退回與已知限制說明、貢獻及問題回饋入口；對擬發布版本完成全新安裝和升級驗收；確認文件描述的採集器與平台支援範圍。準備完成與實際發布分別記錄，不能把 `package.json` 的版本號當成已發布證據。
 
-### 5. QUERY-02：大范围预聚合（按测量决定）
+### 5. QUERY-02：大範圍預聚合（按測量決定）
 
-“全部”仍会读取全部日/项目汇总，尚无服务端物化汇总缓存。只有实际查询与内存测量显示需要时才安排，不能仅因缺少缓存就认定为缺陷。
+「全部」仍會讀取全部日/專案彙總，尚無伺服器端實體化彙總快取。只有實際查詢與記憶體測量顯示需要時才安排，不能僅因缺少快取就認定為缺陷。
 
-2026-10-04 已加入可重复的[合成查询基准](../scripts/query-benchmark.mjs)，完成 10 万 / 100 万事件的全历史与 30 天对比。100 万全历史约 1.09 秒、峰值 RSS 158 MiB、响应约 10 MiB；30 天约 190 ms、63 MiB。测量不含浏览器、并发及远程库。本轮完成测量，未实现预聚合；后续在实际大库高频全历史场景同时评估查询时间与响应体积，详见[查询证据](query-performance.md#大范围查询的可重复基准)。
+2026-10-04 已加入可重複的[合成查詢基準](../scripts/query-benchmark.mjs)，完成 10 萬 / 100 萬事件的全歷史與 30 天對比。100 萬全歷史約 1.09 秒、峰值 RSS 158 MiB、回應約 10 MiB；30 天約 190 ms、63 MiB。測量不含瀏覽器、並行及遠端資料庫。本輪完成測量，未實作預聚合；後續在實際大庫高頻全歷史情境同時評估查詢時間與回應大小，詳見[查詢證據](query-performance.md#大範圍查詢的可重複基準)。
 
-## 更新规则
+## 更新規則
 
-- 原始目标保留固定编号；新增任务单列，不能挤掉未完成项。
-- “部分完成”必须同时写已实现范围与剩余验收条件；代码、测试、合并、运行验证分开记录。
-- 后续变更沿用功能分支、可审阅的提交、PR、CI 通过后合并的流程。状态变化时更新本页，并链接实现和验证证据。
-- 历史金额按既定规则保留，只补可确认的漏算，不为性能优化重算全部历史。
-- 不用一个整体百分比代替不同目标的验收，也不因本页已整理就宣称任何未完成目标已修复。
+- 原始目標保留固定編號；新增任務單列，不能擠掉未完成項。
+- 「部分完成」必須同時寫已實作範圍與剩餘驗收條件；程式碼、測試、合併、執行驗證分開記錄。
+- 後續變更沿用功能分支、可審閱的提交、PR、CI 通過後合併的流程。狀態變化時更新本頁，並連結實作和驗證證據。
+- 歷史金額按既定規則保留，只補可確認的漏算，不為效能最佳化重算全部歷史。
+- 不用一個整體百分比代替不同目標的驗收，也不因本頁已整理就宣稱任何未完成目標已修復。

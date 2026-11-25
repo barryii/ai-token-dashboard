@@ -6,7 +6,7 @@ import { listenError } from './listen-error.mjs';
 
 function port(name, fallback) {
   const value = Number(process.env[name] || fallback);
-  if (!Number.isInteger(value) || value < 1 || value > 65535) throw new Error(`${name} 必须是 1–65535 之间的整数`);
+  if (!Number.isInteger(value) || value < 1 || value > 65535) throw new Error(`${name} 必須是 1–65535 之間的整數`);
   return value;
 }
 
@@ -20,7 +20,7 @@ async function checkPort(host, port) {
 
 async function main() {
   const apiPort = port('API_PORT', 4173), clientPort = port('CLIENT_PORT', 5173);
-  if (apiPort === clientPort) throw new Error('API_PORT 和 CLIENT_PORT 不能使用同一个端口');
+  if (apiPort === clientPort) throw new Error('API_PORT 和 CLIENT_PORT 不能使用同一個連接埠');
   // Check both before launching either child. No processes are stopped by a probe.
   await checkPort(process.env.HOST || '127.0.0.1', apiPort);
   await checkPort('127.0.0.1', clientPort);
@@ -41,7 +41,7 @@ async function main() {
     timer.unref();
   }
   for (const child of children) {
-    child.once('error', error => { console.error(`[启动失败] ${error.message}`); stop(1); });
+    child.once('error', error => { console.error(`[啟動失敗] ${error.message}`); stop(1); });
     child.once('exit', (code, signal) => stop(code ?? (signal ? 1 : 0)));
   }
   process.once('SIGINT', () => stop(130));
@@ -50,6 +50,6 @@ async function main() {
 
 main().catch(error => {
   console.error(error.message);
-  if (error.code === 'EADDRINUSE') console.error(`项目页面地址：http://127.0.0.1:${process.env.CLIENT_PORT || '5173'}/（确认已有项目实例后访问）`);
+  if (error.code === 'EADDRINUSE') console.error(`專案頁面位址：http://127.0.0.1:${process.env.CLIENT_PORT || '5173'}/（確認已有專案實例後存取）`);
   process.exitCode = 1;
 });

@@ -17,16 +17,16 @@ import { SourceDonut } from './SourceRing.jsx';
 // Trend chart — switchable bar/line/stacked + optional comparison
 // ───────────────────────────────────────────────────────────────
 const TREND_MODES = [
-  { id: 'stacked', label: '堆叠' },
-  { id: 'line',    label: '折线' },
-  { id: 'bar',     label: '柱状' }
+  { id: 'stacked', label: '堆疊' },
+  { id: 'line',    label: '折線' },
+  { id: 'bar',     label: '柱狀' }
 ];
 
 const BklitTrend = lazy(() => import('./BklitTrend.jsx'));
 class TrendBoundary extends Component {
   state = { failed:false };
   static getDerivedStateFromError() { return {failed:true}; }
-  render() { return this.state.failed ? <><p className="panel-sub">增强折线暂不可用，已显示兼容图表。</p>{this.props.fallback}</> : this.props.children; }
+  render() { return this.state.failed ? <><p className="panel-sub">增強折線暫不可用，已顯示相容圖表。</p>{this.props.fallback}</> : this.props.children; }
 }
 
 function TrendChart({ rows, dates, sources, compareRows, compareDates, mode, onModeChange, totals, prevTotals, onExport, density }) {
@@ -131,7 +131,7 @@ function TrendChart({ rows, dates, sources, compareRows, compareDates, mode, onM
   // Compare overlay (dashed total of previous period)
   if (compareSeries) {
     series.push({
-      name: '上一周期',
+      name: '上一週期',
       type: 'line',
       smooth: 0.3,
       symbol: 'none',
@@ -146,7 +146,7 @@ function TrendChart({ rows, dates, sources, compareRows, compareDates, mode, onM
   // 7-day rolling baseline (subtle)
   if (mode !== 'line' && dates.length > 10) {
     series.push({
-      name: '7 日均线',
+      name: '7 日均線',
       type: 'line',
       smooth: 0.5,
       symbol: 'none',
@@ -237,10 +237,10 @@ function TrendChart({ rows, dates, sources, compareRows, compareDates, mode, onM
     <div className="panel trend-panel">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">每日 Token 使用趋势</h2>
+          <h2 className="panel-title">每日 Token 使用趨勢</h2>
           <p className="panel-sub">
             {totals?.totalTokens != null && (
-              <>当前周期 <b style={{color:'var(--text)', fontWeight:600}}>{U.compactCN(totals.totalTokens)}</b> tokens · {dates.length} 天</>
+              <>目前週期 <b style={{color:'var(--text)', fontWeight:600}}>{U.compactCN(totals.totalTokens)}</b> tokens · {dates.length} 天</>
             )}
           </p>
         </div>
@@ -285,12 +285,12 @@ function TopModels({ rows, onDrillModel }) {
       <div className="panel-header">
         <div>
           <h2 className="panel-title">Top 模型</h2>
-          <p className="panel-sub">按总 Token 排序 · {list.length} 个{onDrillModel && list.length > 0 ? ' · 点击查看明细' : ''}</p>
+          <p className="panel-sub">按總 Token 排序 · {list.length} 個{onDrillModel && list.length > 0 ? ' · 點選查看明細' : ''}</p>
         </div>
-        <span style={{fontSize: 11, color: 'var(--muted)'}}>Tokens · 费用</span>
+        <span style={{fontSize: 11, color: 'var(--muted)'}}>Tokens · 費用</span>
       </div>
       <div className="bars">
-        {list.length === 0 && <div className="empty">当前筛选下无数据</div>}
+        {list.length === 0 && <div className="empty">目前篩選下無資料</div>}
         {list.map((m, index) => {
           const icon = sourceIcon(m.source);
           return (
@@ -298,7 +298,7 @@ function TopModels({ rows, onDrillModel }) {
             layout={reduceMotion ? false : 'position'}
             transition={{duration: reduceMotion ? 0 : 0.35}}
             disabled={!onDrillModel}
-            aria-label={`查看 ${m.model} 的用量与费用明细`}
+            aria-label={`查看 ${m.model} 的用量與費用明細`}
             onClick={() => onDrillModel?.(m)}>
             <span className="bar-rank" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
             <div className="bar-label">
@@ -308,7 +308,7 @@ function TopModels({ rows, onDrillModel }) {
                       style={{transform: `scale(${sourceIconScale(m.source)})`}}/>
                   : <span className="tag-dot" style={{background: U.getSourceColor(m.source)}}/>}
                 <span className="model">{m.model}</span>
-                <span className="bar-count">{m.count} 条记录</span>
+                <span className="bar-count">{m.count} 筆記錄</span>
               </div>
               <div className="bar-track">
                 <div className="bar-fill"
@@ -396,7 +396,7 @@ function Heatmap({ rows, dates, loading = false, error = null }) {
     {date: showDates.at(-1) || '—', total: 0}
   );
 
-  const WEEKDAY_LABELS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+  const WEEKDAY_LABELS = ['週一', '週二', '週三', '週四', '週五', '週六', '週日'];
   const weekdayTotals = Array(7).fill(0);
   for (const day of dailyActivity) {
     const nativeDay = new Date(`${day.date}T12:00:00`).getDay();
@@ -475,13 +475,13 @@ function Heatmap({ rows, dates, loading = false, error = null }) {
     <div className="panel heatmap-panel">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">使用热力图</h2>
+          <h2 className="panel-title">使用熱力圖</h2>
           <p className="panel-sub">
             {error
-              ? `最近 ${showDates.length} 天 × 24 小时 · 真实小时数据加载失败`
+              ? `最近 ${showDates.length} 天 × 24 小時 · 真實小時資料載入失敗`
               : loading
-                ? `最近 ${showDates.length} 天 × 24 小时 · 正在加载真实小时记录…`
-                : `最近 ${showDates.length} 天 × 24 小时 · 基于真实逐事件记录`}
+                ? `最近 ${showDates.length} 天 × 24 小時 · 正在載入真實小時記錄…`
+                : `最近 ${showDates.length} 天 × 24 小時 · 基於真實逐事件記錄`}
           </p>
         </div>
         <span className="heat-scale">
@@ -491,12 +491,12 @@ function Heatmap({ rows, dates, loading = false, error = null }) {
               <span key={level} className={`heat-cell heat-level-${level}`}/>
             ))}
           </span>
-          活跃
+          活躍
         </span>
       </div>
       <div className="heatmap-layout">
         <div className="heatmap-main">
-          <div className="heatmap-window"><span>{showDates[0] || '—'} — {showDates.at(-1) || '—'}</span><span>每格 1 小时 · 色深按 Token 用量</span></div>
+          <div className="heatmap-window"><span>{showDates[0] || '—'} — {showDates.at(-1) || '—'}</span><span>每格 1 小時 · 色深按 Token 用量</span></div>
           <div className="heatmap-scroll" ref={scrollRef} onScroll={() => setActiveCell(null)}>
             <div
               ref={gridRef}
@@ -520,8 +520,8 @@ function Heatmap({ rows, dates, loading = false, error = null }) {
                     const hour = String(hi).padStart(2, '0');
                     const hasUsage = cell.tokens > 0;
                     const label = hasUsage
-                      ? `${d} ${hour}:00，${U.compactCN(cell.tokens)} tokens，${cell.events} 条记录`
-                      : `${d} ${hour}:00，无使用记录`;
+                      ? `${d} ${hour}:00，${U.compactCN(cell.tokens)} tokens，${cell.events} 筆記錄`
+                      : `${d} ${hour}:00，無使用記錄`;
                     return (
                       <button
                         key={`${di}-${hi}`}
@@ -552,7 +552,7 @@ function Heatmap({ rows, dates, loading = false, error = null }) {
                 </Fragment>
               ))}
 
-              <div className="heat-row-label" style={{gridRow: showDates.length + 3, gridColumn: 1}}>时段</div>
+              <div className="heat-row-label" style={{gridRow: showDates.length + 3, gridColumn: 1}}>時段</div>
               {hourTotals.map((v, hi) => (
                 <div
                   key={`hb-${hi}`}
@@ -580,39 +580,39 @@ function Heatmap({ rows, dates, loading = false, error = null }) {
                   {activeCell.tokens > 0 ? (
                     <>
                       <span>{U.compactCN(activeCell.tokens)} tokens</span>
-                      <small>{activeCell.events} 条记录 · {U.fmtUS.format(activeCell.cost)}</small>
-                      <small>当日总量 {U.compactCN(activeCell.dayTotal)}</small>
+                      <small>{activeCell.events} 筆記錄 · {U.fmtUS.format(activeCell.cost)}</small>
+                      <small>當日總量 {U.compactCN(activeCell.dayTotal)}</small>
                     </>
                   ) : (
-                    <span>无使用记录</span>
+                    <span>無使用記錄</span>
                   )}
                 </div>
               )}
             </div>
           </div>
-          <p className="heatmap-help">悬浮或点按查看明细 · 方向键切换格子<span> · 窄屏可左右滑动</span></p>
+          <p className="heatmap-help">懸浮或點按查看明細 · 方向鍵切換格子<span> · 窄螢幕可左右滑動</span></p>
         </div>
 
-        <aside className="heat-insights" aria-label="活跃摘要">
+        <aside className="heat-insights" aria-label="活躍摘要">
           <div className="heat-insights-head">
             <div>
-              <h3>活跃摘要</h3>
-              <p>基于真实逐事件记录</p>
+              <h3>活躍摘要</h3>
+              <p>基於真實逐事件記錄</p>
             </div>
-            <span>{activeDays}/{showDates.length} 天活跃</span>
+            <span>{activeDays}/{showDates.length} 天活躍</span>
           </div>
 
           <div className="heat-stat-grid">
             <div className="heat-stat">
-              <span>活跃天数</span>
+              <span>活躍天數</span>
               <strong>{activeDays}<small> / {showDates.length} 天</small></strong>
             </div>
             <div className="heat-stat">
-              <span>当前连续</span>
+              <span>目前連續</span>
               <strong>{currentStreak}<small> 天</small></strong>
             </div>
             <div className="heat-stat">
-              <span>最长连续</span>
+              <span>最長連續</span>
               <strong>{longestStreak}<small> 天</small></strong>
             </div>
             <div className="heat-stat">
@@ -621,7 +621,7 @@ function Heatmap({ rows, dates, loading = false, error = null }) {
               <small>{U.compactCN(peakDay.total)} tokens</small>
             </div>
             <div className="heat-stat" style={{gridColumn: '1 / -1'}}>
-              <span>高峰时段</span>
+              <span>高峰時段</span>
               <strong>{weekdayGrandTotal > 0 ? `${String(peakHourIndex).padStart(2, '0')}:00` : '—'}</strong>
               <small>{U.compactCN(hourTotals[peakHourIndex])} tokens</small>
             </div>
@@ -629,7 +629,7 @@ function Heatmap({ rows, dates, loading = false, error = null }) {
 
           <div className="heat-weekday-head">
             <span>星期分布</span>
-            <small>{weekdayGrandTotal > 0 ? `高峰 ${WEEKDAY_LABELS[topWeekdayIndex]}` : '暂无用量'}</small>
+            <small>{weekdayGrandTotal > 0 ? `高峰 ${WEEKDAY_LABELS[topWeekdayIndex]}` : '暫無用量'}</small>
           </div>
           <div className="heat-weekdays">
             {weekdayTotals.map((value, index) => {
@@ -637,7 +637,7 @@ function Heatmap({ rows, dates, loading = false, error = null }) {
               return (
                 <div className="heat-weekday" key={WEEKDAY_LABELS[index]}>
                   <span>{WEEKDAY_LABELS[index]}</span>
-                  <div className="heat-weekday-track" aria-label={`${WEEKDAY_LABELS[index]}占比 ${share}%`}>
+                  <div className="heat-weekday-track" aria-label={`${WEEKDAY_LABELS[index]}佔比 ${share}%`}>
                     <div style={{height: value ? `${(value / weekdayMax) * 100}%` : 0}}/>
                   </div>
                   <strong>{share}%</strong>
@@ -647,7 +647,7 @@ function Heatmap({ rows, dates, loading = false, error = null }) {
           </div>
           <div className="heat-week-meta">
             <span>工作日 <b>{weekdayShare}%</b></span>
-            <span>周末 <b>{weekdayGrandTotal ? 100 - weekdayShare : 0}%</b></span>
+            <span>週末 <b>{weekdayGrandTotal ? 100 - weekdayShare : 0}%</b></span>
           </div>
         </aside>
       </div>
@@ -661,8 +661,8 @@ function Heatmap({ rows, dates, loading = false, error = null }) {
 function Gauge({ rate, cacheRead, cacheCreation, total, prevRate, savedUSD, hitRateSeries }) {
   const reduceMotion = useReducedMotion();
   if (!(total > 0)) return <div className="panel cache-card">
-    <div className="panel-header"><h2 className="panel-title">缓存命中率</h2></div>
-    <div className="empty">当前筛选下暂无用量，无法计算缓存命中率</div>
+    <div className="panel-header"><h2 className="panel-title">快取命中率</h2></div>
+    <div className="empty">目前篩選下暫無用量，無法計算快取命中率</div>
   </div>;
   const r = Math.max(0, Math.min(100, rate));
   // The sparkline below scales to its own range, so name that range rather than
@@ -675,8 +675,8 @@ function Gauge({ rate, cacheRead, cacheCreation, total, prevRate, savedUSD, hitR
     <div className="panel cache-card">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">缓存命中率</h2>
-          <p className="panel-sub">缓存读取占总 Token 的比例</p>
+          <h2 className="panel-title">快取命中率</h2>
+          <p className="panel-sub">快取讀取佔總 Token 的比例</p>
         </div>
         <Delta value={U.deltaPct(rate, prevRate)} />
       </div>
@@ -708,14 +708,14 @@ function Gauge({ rate, cacheRead, cacheCreation, total, prevRate, savedUSD, hitR
       </div>
 
       <div className="cache-line">
-        <div><span><i className="cache-key cache-key-read"/>缓存读取</span><b><AnimatedNumber value={cacheRead} format={U.compactCN}/></b></div>
-        <div><span><i className="cache-key cache-key-create"/>缓存创建</span><b><AnimatedNumber value={cacheCreation} format={U.compactCN}/></b></div>
+        <div><span><i className="cache-key cache-key-read"/>快取讀取</span><b><AnimatedNumber value={cacheRead} format={U.compactCN}/></b></div>
+        <div><span><i className="cache-key cache-key-create"/>快取建立</span><b><AnimatedNumber value={cacheCreation} format={U.compactCN}/></b></div>
       </div>
 
       <div className="cache-saved">
-        <div className="cache-saved-label">预估缓存节省</div>
+        <div className="cache-saved-label">預估快取節省</div>
         <div className="cache-saved-num">≈ <AnimatedNumber value={savedUSD || 0} format={U.fmtUS.format}/></div>
-        <div className="cache-saved-sub">若无缓存需多付的估算金额</div>
+        <div className="cache-saved-sub">若無快取需多付的估算金額</div>
       </div>
 
       <div className="cache-trend">
@@ -765,14 +765,14 @@ function GrowthPanel({ totalsByDay }) {
     <div className="panel">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">环比与趋势</h2>
-          <p className="panel-sub">基于当前筛选周期</p>
+          <h2 className="panel-title">環比與趨勢</h2>
+          <p className="panel-sub">基於目前篩選週期</p>
         </div>
       </div>
       <div style={{display: 'flex', flexDirection: 'column', gap: 8, flex: 1, justifyContent: 'space-evenly'}}>
-        <GrowthStat label="日环比 DoD" value={dod} sub={`今日 ${U.compactCN(today)}`}/>
-        <GrowthStat label="周环比 WoW" value={wow} sub={`7 日 ${U.compactCN(last7)}`}/>
-        <GrowthStat label="月环比 MoM" value={mom} sub={`30 日 ${U.compactCN(last30)}`}/>
+        <GrowthStat label="日環比 DoD" value={dod} sub={`今日 ${U.compactCN(today)}`}/>
+        <GrowthStat label="週環比 WoW" value={wow} sub={`7 日 ${U.compactCN(last7)}`}/>
+        <GrowthStat label="月環比 MoM" value={mom} sub={`30 日 ${U.compactCN(last30)}`}/>
         <GrowthStat label="日均"       value={null} sub={U.compactCN(avg)} subUnit="tokens / day"/>
       </div>
       <div style={{marginTop: 14, padding: '10px 12px', background: 'var(--surface-2)',

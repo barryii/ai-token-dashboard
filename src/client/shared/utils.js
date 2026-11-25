@@ -50,7 +50,7 @@ function getSourceColor(name) {
   return PALETTE_FALLBACK[h % PALETTE_FALLBACK.length];
 }
 
-const fmt   = new Intl.NumberFormat('zh-CN');
+const fmt   = new Intl.NumberFormat('zh-TW');
 const fmtUS = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtUS4 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 4 });
 
@@ -66,8 +66,8 @@ function compact(v) {
 function compactCN(v) {
   if (v == null) return '—';
   const a = Math.abs(v);
-  if (a >= 1e8) return (v / 1e8).toFixed(2).replace(/\.?0+$/, '') + ' 亿';
-  if (a >= 1e4) return (v / 1e4).toFixed(1).replace(/\.0$/, '') + ' 万';
+  if (a >= 1e8) return (v / 1e8).toFixed(2).replace(/\.?0+$/, '') + ' 億';
+  if (a >= 1e4) return (v / 1e4).toFixed(1).replace(/\.0$/, '') + ' 萬';
   return fmt.format(v);
 }
 

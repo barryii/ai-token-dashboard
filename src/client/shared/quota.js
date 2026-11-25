@@ -8,7 +8,7 @@
    ============================================================= */
 
 export const QUOTA_WINDOW_LABEL = {
-  five_hour: '5 小时',
+  five_hour: '5 小時',
   seven_day: '7 天',
   seven_day_opus: '7 天 · Opus',
   seven_day_sonnet: '7 天 · Sonnet'

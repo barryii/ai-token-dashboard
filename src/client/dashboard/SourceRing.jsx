@@ -14,12 +14,12 @@ export function SourceDonut({rows,sources,onFocusSource,focused}) {
   const segments = data.map((d,index)=>({...d,radius:100-index*spacing,length:d.value/total*100}));
   return <div className="panel source-donut-panel source-ring-panel">
     <div className="panel-header">
-      <div><h2 className="panel-title">来源占比</h2><p className="panel-sub">每个来源一圈 · 弧长表示总量占比</p></div>
+      <div><h2 className="panel-title">來源佔比</h2><p className="panel-sub">每個來源一圈 · 弧長表示總量佔比</p></div>
       {focused&&<button className="btn" onClick={()=>onFocusSource(null)}>取消聚焦</button>}
     </div>
-    {!total ? <div className="empty">当前筛选下暂无来源用量</div> : <>
+    {!total ? <div className="empty">目前篩選下暫無來源用量</div> : <>
       <div className="source-ring-stage">
-        <svg viewBox="0 0 240 240" className="source-ring-svg" aria-label="来源用量多层同心圆图，从外到内按用量排序" role="img">
+        <svg viewBox="0 0 240 240" className="source-ring-svg" aria-label="來源用量多層同心圓圖，從外到內按用量排序" role="img">
           {segments.map(d=><motion.g key={d.name}
             initial={false} animate={{opacity:active&&active.name!==d.name?0.22:1}}
             transition={{duration:reduceMotion?0:0.12}}
@@ -34,9 +34,9 @@ export function SourceDonut({rows,sources,onFocusSource,focused}) {
           </motion.g>)}
         </svg>
         <div className="source-ring-center">
-          <span>{active?.name||'当前筛选合计'}</span>
+          <span>{active?.name||'目前篩選合計'}</span>
           <strong>{U.compactCN(active?.value??total)}</strong>
-          <small>{active?`占总量 ${U.usageShare(active.value,total)}`:'TOKENS'}</small>
+          <small>{active?`佔總量 ${U.usageShare(active.value,total)}`:'TOKENS'}</small>
         </div>
       </div>
       <div className="source-ring-list" onPointerLeave={()=>setHovered(null)}>
@@ -49,7 +49,7 @@ export function SourceDonut({rows,sources,onFocusSource,focused}) {
           <span className="source-ring-value">{U.compactCN(d.value)}</span>
         </button>)}
       </div>
-      <p className="source-ring-hint">由外到内用量递减 · 点击圆环或来源聚焦</p>
+      <p className="source-ring-hint">由外到內用量遞減 · 點選圓環或來源聚焦</p>
     </>}
   </div>;
 }

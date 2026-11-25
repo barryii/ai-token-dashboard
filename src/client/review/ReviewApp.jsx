@@ -41,7 +41,7 @@ export function ReviewApp() {
           border: '3px solid var(--rule)', borderTopColor: 'var(--indigo)',
           animation: 'spin 0.8s linear infinite'
         }}/>
-        <div style={{color: 'var(--ink-soft)', fontSize: 14}}>加载数据中…</div>
+        <div style={{color: 'var(--ink-soft)', fontSize: 14}}>載入資料中…</div>
       </div>
     );
   }
@@ -53,13 +53,13 @@ export function ReviewApp() {
         height: '100vh', flexDirection: 'column', gap: 12
       }}>
         <div style={{fontSize: 32}}>⚠️</div>
-        <div style={{color: 'var(--ink)', fontWeight: 600}}>数据加载失败</div>
+        <div style={{color: 'var(--ink)', fontWeight: 600}}>資料載入失敗</div>
         <div style={{color: 'var(--ink-soft)', fontSize: 13}}>{error}</div>
         <button onClick={state.retry} style={{
           marginTop: 8, padding: '8px 18px', borderRadius: 8,
           border: '1px solid var(--rule)', background: 'var(--paper-2)',
           cursor: 'pointer', fontSize: 13
-        }}>重新加载</button>
+        }}>重新載入</button>
       </div>
     );
   }
@@ -159,7 +159,7 @@ function ReviewDashboard({ rawData, period, periodId, setPeriodId, queryState })
             <span className="brand-name">Token Studio</span>
             <div className="page-switch">
               <a href="/" className="page-chip">看板</a>
-              <span className="page-chip active">复盘</span>
+              <span className="page-chip active">複盤</span>
             </div>
           </div>
           <div className="period-switch">
@@ -178,23 +178,23 @@ function ReviewDashboard({ rawData, period, periodId, setPeriodId, queryState })
                 <rect x="2.5" y="4.5" width="8" height="6" rx="1" stroke="currentColor" strokeWidth="1.3"/>
                 <path d="M4 4.5V2h5v2.5M4 8.5h5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
               </svg>
-              打印
+              列印
             </button>
           </div>
         </div>
       </nav>
 
       {!queryState.ready ? <div className="page" role={queryState.error ? 'alert' : 'status'}>
-        {queryState.error ? `复盘加载失败：${queryState.error}` : '正在加载所选周期的复盘…'}
-        {queryState.error && <button className="nav-btn" onClick={queryState.retry}>重试</button>}
+        {queryState.error ? `複盤載入失敗：${queryState.error}` : '正在載入所選週期的複盤…'}
+        {queryState.error && <button className="nav-btn" onClick={queryState.retry}>重試</button>}
       </div> : <>
       <div className="page">
-        {daily.some(r => r.reconciliation && r.reconciliation !== 'matched') && <p className="section-sub" role="note">部分历史汇总与事件明细尚未核对一致。已有费用已保留，不能按当前价格快照解释为当时账单。</p>}
+        {daily.some(r => r.reconciliation && r.reconciliation !== 'matched') && <p className="section-sub" role="note">部分歷史匯總與事件明細尚未核對一致。已有費用已保留，不能按當前價格快照解釋為當時帳單。</p>}
         <HeroSection period={period} totals={totals} prevTotals={prevTotals} stats={heroStats}/>
       </div>
 
       <div className="page">
-        <p className="section-sub">项目归属来自事件明细。{U.compactCN(Math.max(0, totals.total - RU.sumField(projectDaily, 'totalTokens')))} Token 暂无可核对的项目归属；项目费用可能与保留的历史汇总金额不同。</p>
+        <p className="section-sub">專案歸屬來自事件明細。{U.compactCN(Math.max(0, totals.total - RU.sumField(projectDaily, 'totalTokens')))} Token 暫無可核對的專案歸屬；專案費用可能與保留的歷史匯總金額不同。</p>
         <ProjectSection daily={projectDaily} totalTokens={totals.total}/>
       </div>
 
@@ -239,7 +239,7 @@ function ReviewDashboard({ rawData, period, periodId, setPeriodId, queryState })
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 1v8M4 6l3 3 3-3M2 12h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            导出 CSV
+            匯出 CSV
           </button>
         </div>
       </footer>

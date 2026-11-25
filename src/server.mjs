@@ -50,7 +50,7 @@ const pricingData = await loadPricing(resolve(process.cwd(), 'data', 'pricing-li
 let activeCollection = null;
 let collectionState = {
   status: 'idle',
-  message: '尚未启动采集',
+  message: '尚未啟動採集',
   startedAt: null,
   finishedAt: null,
   exitCode: null,
@@ -180,7 +180,7 @@ function handleCollect(req, res) {
   const proxied = ['x-forwarded-for', 'x-forwarded-host', 'x-real-ip', 'forwarded']
     .some(header => req.headers[header]);
   if (!isLoopback(req.socket.remoteAddress) || proxied) {
-    sendJson(res, { error: '采集接口仅允许本机访问' }, 403);
+    sendJson(res, { error: '採集介面僅允許本機存取' }, 403);
     return;
   }
 
@@ -210,7 +210,7 @@ function startCollection({ reason = 'manual' } = {}) {
   const startedAt = new Date().toISOString();
   collectionState = {
     status: 'running',
-    message: reason === 'scheduled' ? '正在定时采集本机用量' : '正在采集本机用量',
+    message: reason === 'scheduled' ? '正在定時採集本機用量' : '正在採集本機用量',
     startedAt,
     finishedAt: null,
     exitCode: null,
@@ -239,7 +239,7 @@ function startCollection({ reason = 'manual' } = {}) {
     activeCollection = null;
     collectionState = {
       status: code === 0 ? 'ok' : 'error',
-      message: code === 0 ? '采集完成' : '采集失败',
+      message: code === 0 ? '採集完成' : '採集失敗',
       exitCode: code,
       startedAt,
       finishedAt: new Date().toISOString(),
@@ -324,8 +324,8 @@ async function handleIngest(req, res) {
 
     const fullRebuild = payload.mode === 'full';
 
-    // 全量 push 携带设备完整时间窗,按 (device, source) 整体替换;
-    // 增量 push 只含新事件,只做 upsert,绝不删表。
+    // 全量 push 攜帶裝置完整時間窗,按 (device, source) 整體替換;
+    // 增量 push 只含新事件,只做 upsert,絕不刪表。
     const timePairs = new Map();
     if (fullRebuild) {
       for (const row of payload.scopes) {
@@ -424,7 +424,7 @@ function readJson(req) {
     req.on('data', (chunk) => {
       body += chunk;
       if (body.length > 50 * 1024 * 1024) {
-        rejectRequest(new Error('请求体过大'));
+        rejectRequest(new Error('請求本文過大'));
         req.destroy();
       }
     });

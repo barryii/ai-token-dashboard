@@ -5,9 +5,9 @@ export function dailyRangeForFilters(filters) {
   const { startDate, endDate } = filters;
   for (const date of [startDate, endDate]) {
     const stamp = Date.parse(`${date}T00:00:00Z`);
-    if (!Number.isFinite(stamp) || new Date(stamp).toISOString().slice(0, 10) !== date) throw new Error('请选择有效的日期范围');
+    if (!Number.isFinite(stamp) || new Date(stamp).toISOString().slice(0, 10) !== date) throw new Error('請選擇有效的日期範圍');
   }
-  if (startDate > endDate) throw new Error('请选择有效的日期范围');
+  if (startDate > endDate) throw new Error('請選擇有效的日期範圍');
   const days = Math.round((Date.parse(`${endDate}T00:00:00Z`) - Date.parse(`${startDate}T00:00:00Z`)) / 86400_000) + 1;
   return { startDate: filters.compare ? U.addDays(startDate, -days) : startDate, endDate };
 }
@@ -22,7 +22,7 @@ export async function fetchDailyRange(range, { signal, fetcher = fetch } = {}) {
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const data = await response.json();
   if (!['daily', 'projectDaily', 'runs'].every(key => Array.isArray(data[key])) || !data.dateRange
-      || !['devices', 'sources', 'models'].every(key => Array.isArray(data.dimensions?.[key]))) throw new Error('日期统计数据格式错误，请确认服务端已升级');
+      || !['devices', 'sources', 'models'].every(key => Array.isArray(data.dimensions?.[key]))) throw new Error('日期統計資料格式錯誤，請確認伺服器端已升級');
   return data;
 }
 
@@ -30,14 +30,14 @@ export async function fetchHourlyRange(range, { signal, fetcher = fetch } = {}) 
   const response = await fetcher(`/api/hourly?${queryParams(range)}`, { signal });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const data = await response.json();
-  if (!Array.isArray(data.hourly)) throw new Error('小时统计数据格式错误');
+  if (!Array.isArray(data.hourly)) throw new Error('小時統計資料格式錯誤');
   return data;
 }
 
 export function timeRangeForFilters(filters) {
   const start = displayTimeMs(filters.startDateTime);
   const end = displayTimeMs(filters.endDateTime);
-  if (!Number.isFinite(start) || !Number.isFinite(end) || start > end) throw new Error('请选择有效的时间范围');
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start > end) throw new Error('請選擇有效的時間範圍');
   return { start: new Date(filters.compare ? start - (end - start) - 60_000 : start).toISOString(), end: new Date(end).toISOString() };
 }
 
@@ -48,7 +48,7 @@ export async function fetchTimeRange(range, { signal, fetcher = fetch } = {}) {
     const data = await fetchTimePage(range, { signal, fetcher, cursor, limit: 2000 });
     rows.push(...data.time);
     cursor = data.nextCursor;
-    if (cursor && seen.has(cursor)) throw new Error('明细分页重复，请重试');
+    if (cursor && seen.has(cursor)) throw new Error('明細分頁重複，請重試');
     if (cursor) seen.add(cursor);
   } while (cursor);
   return rows;
@@ -102,7 +102,7 @@ export async function fetchTimePage(query, { signal, fetcher = fetch, cursor = n
   const response = await fetcher(`/api/time?${params}`, { signal });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const data = await response.json();
-  if (!Array.isArray(data.time) || !(data.nextCursor === null || typeof data.nextCursor === 'string')) throw new Error('明细数据格式错误');
+  if (!Array.isArray(data.time) || !(data.nextCursor === null || typeof data.nextCursor === 'string')) throw new Error('明細資料格式錯誤');
   return data;
 }
 
@@ -111,7 +111,7 @@ export async function fetchTimeSummary(range, { signal, fetcher = fetch } = {}) 
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const data = await response.json();
   for (const part of [data.current, ...(range.compareStart ? [data.previous] : [])]) {
-    if (!part || !['daily', 'projectDaily', 'hourly'].every(key => Array.isArray(part[key]))) throw new Error('统计数据格式错误');
+    if (!part || !['daily', 'projectDaily', 'hourly'].every(key => Array.isArray(part[key]))) throw new Error('統計資料格式錯誤');
   }
   return data;
 }

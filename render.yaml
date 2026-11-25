@@ -9,7 +9,7 @@ services:
         value: 4173
       - key: INGEST_TOKEN
         generateValue: true
-      # 云端主机默认 UTC。取消注释并改成你的时区，热力图/价格锁定按本地时间显示。
+      # 雲端主機預設 UTC。取消註解並改成你的時區，熱力圖/價格鎖定按本地時間顯示。
       # - key: DISPLAY_TZ
       #   value: Asia/Shanghai
     disk:

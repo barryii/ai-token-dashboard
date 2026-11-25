@@ -18,7 +18,7 @@ function HeroSection({ period, totals, prevTotals, stats }) {
   return (
     <section className="hero">
       <div className="hero-eyebrow">
-        <span>AI TOKEN 复盘</span>
+        <span>AI TOKEN 複盤</span>
         <span className="sep"/>
         <span>{period.pretty}</span>
       </div>
@@ -28,10 +28,10 @@ function HeroSection({ period, totals, prevTotals, stats }) {
       </h1>
 
       <p className="hero-sub">
-        折合费用 <b style={{color: 'var(--ink)', fontVariantNumeric: 'tabular-nums'}}>{U.fmtUS.format(totals.cost)}</b>
+        折合費用 <b style={{color: 'var(--ink)', fontVariantNumeric: 'tabular-nums'}}>{U.fmtUS.format(totals.cost)}</b>
         {delta != null && (
           <>
-            ，比上一周期
+            ，比上一週期
             <span className={`delta ${deltaUp ? 'up' : 'down'}`} style={{marginLeft: 6}}>
               {deltaUp ? '↑' : '↓'} {Math.abs(delta).toFixed(0)}%
             </span>
@@ -41,14 +41,14 @@ function HeroSection({ period, totals, prevTotals, stats }) {
 
       <div className="hero-meta">
         花在了
-        <b>{stats.projectCount}</b> 个项目、
-        <b>{stats.sourceCount}</b> 种工具、
-        <b>{stats.activeDays}</b> 个活跃天上
+        <b>{stats.projectCount}</b> 個專案、
+        <b>{stats.sourceCount}</b> 種工具、
+        <b>{stats.activeDays}</b> 個活躍天上
       </div>
 
       <div className="stat-strip">
         <div className="stat-cell">
-          <div className="l">最高单日</div>
+          <div className="l">最高單日</div>
           <div className="v">{stats.peakDay ? U.compactCN(stats.peakDay.total) : '—'}</div>
           <div className="s">{stats.peakDay ? stats.peakDay.date : '—'}</div>
         </div>
@@ -65,12 +65,12 @@ function HeroSection({ period, totals, prevTotals, stats }) {
           </div>
         </div>
         <div className="stat-cell">
-          <div className="l">缓存命中率</div>
+          <div className="l">快取命中率</div>
           <div className="v">{totals.cacheHitRate.toFixed(0)}<span style={{fontSize: 18, color: 'var(--ink-3)'}}>%</span></div>
-          <div className="s">节省约 {Math.round(totals.cacheHitRate / 5)}× 重复计算</div>
+          <div className="s">節省約 {Math.round(totals.cacheHitRate / 5)}× 重複計算</div>
         </div>
         <div className="stat-cell">
-          <div className="l">日均费用</div>
+          <div className="l">日均費用</div>
           <div className="v">{U.fmtUS.format(stats.avgDailyCost)}</div>
           <div className="s">{stats.activeDays} 天 / {U.fmtUS.format(totals.cost)}</div>
         </div>
@@ -91,7 +91,7 @@ function ProjectSection({ daily, totalTokens }) {
     const restTotal = rest.reduce((s, x) => s + x.totalTokens, 0);
     const restCost  = rest.reduce((s, x) => s + x.costUSD, 0);
     return [...top, {
-      key: '（其他 ' + rest.length + ' 个项目）',
+      key: '（其他 ' + rest.length + ' 個專案）',
       totalTokens: restTotal,
       costUSD: restCost,
       dayCount: 0,
@@ -116,9 +116,9 @@ function ProjectSection({ daily, totalTokens }) {
 
   return (
     <section className="story">
-      <div className="section-label">02 · 项目</div>
-      <h2 className="section-title">按项目看，钱主要花在这里</h2>
-      <p className="section-sub">条形长度代表 token 占比，颜色深浅代表费用大小。Token 与费用并不总是同步——重读 cache 的项目消耗大但成本低。</p>
+      <div className="section-label">02 · 專案</div>
+      <h2 className="section-title">按專案看，錢主要花在這裡</h2>
+      <p className="section-sub">條形長度代表 token 佔比，顏色深淺代表費用大小。Token 與費用並不總是同步——重讀 cache 的專案消耗大但成本低。</p>
 
       <div className="proj-list">
         {agg.map((p, i) => {
@@ -130,7 +130,7 @@ function ProjectSection({ daily, totalTokens }) {
                 <div className="proj-head">
                   <span className="proj-name" title={p.key}>{p.key}</span>
                   <span className="proj-meta">
-                    {!p.isRest && p.dayCount + ' 活跃天 · '}
+                    {!p.isRest && p.dayCount + ' 活躍天 · '}
                     {pct.toFixed(1)}%
                   </span>
                 </div>
@@ -144,7 +144,7 @@ function ProjectSection({ daily, totalTokens }) {
               </div>
               <div className="proj-val">
                 <div className="big">{U.compactCN(p.totalTokens)}</div>
-                <div className="small">{p.costUSD > 0 ? U.fmtUS.format(p.costUSD) : '未记录费用'}</div>
+                <div className="small">{p.costUSD > 0 ? U.fmtUS.format(p.costUSD) : '未記錄費用'}</div>
               </div>
             </div>
           );
@@ -153,11 +153,11 @@ function ProjectSection({ daily, totalTokens }) {
 
       {narrative && (
         <div className="pullquote">
-          <code>{narrative.top.key}</code> 是这个周期消耗最大的项目，占总量的 <b>{narrative.share.toFixed(0)}%</b>，
+          <code>{narrative.top.key}</code> 是這個週期消耗最大的專案，佔總量的 <b>{narrative.share.toFixed(0)}%</b>，
           主要使用 <code>{narrative.topModel}</code> 模型，cache 命中率 <b>{narrative.cacheRate}%</b>
-          {narrative.cacheRate > 60 ? '——说明你在这个项目里反复在同一上下文工作。'
-            : narrative.cacheRate < 30 ? '——上下文切换频繁，每次都重新喂入大量信息。'
-            : '，上下文复用程度中等。'}
+          {narrative.cacheRate > 60 ? '——說明你在這個專案裡反覆在同一上下文工作。'
+            : narrative.cacheRate < 30 ? '——上下文切換頻繁，每次都重新餵入大量資訊。'
+            : '，上下文重複使用程度中等。'}
         </div>
       )}
     </section>
@@ -195,9 +195,9 @@ function CalendarSection({ daily, period }) {
 
   return (
     <section className="story">
-      <div className="section-label">03 · 时间线</div>
-      <h2 className="section-title">用量高峰出现在这几天</h2>
-      <p className="section-sub">日历视图按天展示 token 消耗，颜色越深消耗越大。鼠标悬停可以看当天明细。</p>
+      <div className="section-label">03 · 時間線</div>
+      <h2 className="section-title">用量高峰出現在這幾天</h2>
+      <p className="section-sub">日曆檢視按天展示 token 消耗，顏色越深消耗越大。滑鼠懸停可以看當天明細。</p>
 
       <div className="calendar">
         <div className="cal-months">
@@ -260,7 +260,7 @@ function CalendarSection({ daily, period }) {
                 <div className="peak-date">{p.date}</div>
                 <div className="peak-detail">
                   {topProject && (
-                    <>主要项目 <b>{topProject.key}</b><span className="arrow">→</span></>
+                    <>主要專案 <b>{topProject.key}</b><span className="arrow">→</span></>
                   )}
                   {topTool && <>工具 <b>{topTool[0]}</b></>}
                 </div>

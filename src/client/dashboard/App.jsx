@@ -18,7 +18,7 @@ const EMPTY_TIME = [];   // stable reference so memoized selectors don't churn
 function summarizeCollectOutput(stdout) {
   return stdout
     ? stdout.split('\n').filter(Boolean).slice(-5).join(' · ')
-    : '采集完成';
+    : '採集完成';
 }
 
 export function App() {
@@ -113,14 +113,14 @@ export function App() {
         if (options.signal?.aborted) return data;
         if (data.status === 'running') {
           setCollecting(true);
-          setCollectStatus({ type: 'running', message: data.message || '正在采集本机用量…' });
+          setCollectStatus({ type: 'running', message: data.message || '正在採集本機用量…' });
         } else if (data.status === 'ok') {
           setCollecting(false);
           setCollectStatus({ type: 'ok', message: summarizeCollectOutput(data.stdout) });
           if (options.refreshOnDone) loadData();
         } else if (data.status === 'error') {
           setCollecting(false);
-          setCollectStatus({ type: 'error', message: data.stderr || data.message || '采集失败' });
+          setCollectStatus({ type: 'error', message: data.stderr || data.message || '採集失敗' });
         } else {
           setCollecting(false);
         }
@@ -156,20 +156,20 @@ export function App() {
     const controller = new AbortController();
     collectionRequest.current = controller;
     setCollecting(true);
-    setCollectStatus({ type: 'running', message: '正在采集本机用量…' });
+    setCollectStatus({ type: 'running', message: '正在採集本機用量…' });
     fetch('/api/collect', { method: 'POST', signal: controller.signal })
       .then(async r => {
         const data = await r.json().catch(() => ({}));
         if (!r.ok && r.status !== 202) {
           throw new Error(data.error || data.stderr || `HTTP ${r.status}`);
         }
-        setCollectStatus({ type: 'running', message: data.message || '正在采集本机用量…' });
+        setCollectStatus({ type: 'running', message: data.message || '正在採集本機用量…' });
         return waitForCollectDone(controller.signal);
       })
       .catch(err => {
         if (controller.signal.aborted) return;
         setCollecting(false);
-        setCollectStatus({ type: 'error', message: err.message || '采集失败' });
+        setCollectStatus({ type: 'error', message: err.message || '採集失敗' });
       });
   }, [waitForCollectDone]);
 
@@ -185,8 +185,8 @@ export function App() {
           <circle cx="20" cy="20" r="18" stroke="oklch(0.65 0.16 25)" strokeWidth="2"/>
           <path d="M20 12v10M20 28v2" stroke="oklch(0.65 0.16 25)" strokeWidth="2.5" strokeLinecap="round"/>
         </svg>
-        <p style={{fontSize: 15, margin: 0}}>加载失败：{loadError}</p>
-        <button className="btn btn-primary" onClick={loadData}>重试</button>
+        <p style={{fontSize: 15, margin: 0}}>載入失敗：{loadError}</p>
+        <button className="btn btn-primary" onClick={loadData}>重試</button>
       </div>
     );
   }
@@ -202,7 +202,7 @@ export function App() {
           <circle cx="16" cy="16" r="13" stroke="var(--c-indigo)" strokeWidth="2.5"
             strokeDasharray="60" strokeDashoffset="20" strokeLinecap="round"/>
         </svg>
-        <p style={{fontSize: 14, margin: 0}}>正在加载数据…</p>
+        <p style={{fontSize: 14, margin: 0}}>正在載入資料…</p>
       </div>
     );
   }
@@ -427,7 +427,7 @@ function Dashboard({ M, filters, setFilters, refreshing, collecting, collectStat
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M3 7l3 3 5-6" stroke="var(--c-indigo)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          <span>聚焦中：<b style={{ color: 'var(--c-indigo)' }}>{focusedSource}</b> · 所有图表已联动</span>
+          <span>聚焦中：<b style={{ color: 'var(--c-indigo)' }}>{focusedSource}</b> · 所有圖表已聯動</span>
           <button className="btn" style={{ marginLeft: 'auto', height: 24, fontSize: 11.5 }}
             onClick={() => setFocusedSource(null)}>取消聚焦</button>
         </div>
@@ -435,37 +435,37 @@ function Dashboard({ M, filters, setFilters, refreshing, collecting, collectStat
 
       {!filters.precise && !M.dailyState.ready ? (
         <div className="panel" role={M.dailyState.error ? 'alert' : 'status'} style={{ padding: 24 }}>
-          {!M.dailyRange ? '请选择有效的日期范围' : M.dailyState.error ? `日期统计加载失败：${M.dailyState.error}` : '正在加载所选日期的统计…'}
-          {M.dailyState.error && <button className="btn" onClick={M.dailyState.retry}>重试统计</button>}
+          {!M.dailyRange ? '請選擇有效的日期範圍' : M.dailyState.error ? `日期統計載入失敗：${M.dailyState.error}` : '正在載入所選日期的統計…'}
+          {M.dailyState.error && <button className="btn" onClick={M.dailyState.retry}>重試統計</button>}
         </div>
       ) : filters.precise && !preciseReady ? (
         <div className="panel" role={M.timeState.error ? 'alert' : 'status'} style={{ padding: 24 }}>
-          {!preciseRange ? '请选择有效的时间范围' : M.timeState.error ? `精确统计加载失败：${M.timeState.error}` : '正在加载所选时间范围的统计…'}
-          {preciseRange && M.timeState.error && <button className="btn" onClick={() => onNeedTime(preciseRange, { force: true })}>重试统计</button>}
+          {!preciseRange ? '請選擇有效的時間範圍' : M.timeState.error ? `精確統計載入失敗：${M.timeState.error}` : '正在載入所選時間範圍的統計…'}
+          {preciseRange && M.timeState.error && <button className="btn" onClick={() => onNeedTime(preciseRange, { force: true })}>重試統計</button>}
         </div>
       ) : <>
-      {filters.precise && <p className="muted" role="note">精确时间模式仅统计已采集的事件明细；没有事件记录的来源和历史区间不包含在内。</p>}
+      {filters.precise && <p className="muted" role="note">精確時間模式僅統計已採集的事件明細；沒有事件記錄的來源和歷史區間不包含在內。</p>}
       {/* KPI row */}
       <div className="kpi-row">
-        <KPI label="总 Token" value={U.compactCN(totals.totalTokens)}
+        <KPI label="總 Token" value={U.compactCN(totals.totalTokens)}
           numericValue={totals.totalTokens}
           sub="vs 上周期"
           delta={U.deltaPct(totals.totalTokens, compareData.totals?.totalTokens)}
           sparkValues={sparkValues} sparkColor="oklch(0.55 0.16 265)" />
-        <KPI label="输出" value={U.compactCN(totals.outputTokens)}
+        <KPI label="輸出" value={U.compactCN(totals.outputTokens)}
           numericValue={totals.outputTokens}
           sub="生成"
           delta={U.deltaPct(totals.outputTokens, compareData.totals?.outputTokens)}
           sparkValues={sparkBy('outputTokens')} sparkColor="oklch(0.60 0.15 295)" />
-        <KPI label="缓存" value={U.compactCN(totals.cacheTokens)}
+        <KPI label="快取" value={U.compactCN(totals.cacheTokens)}
           numericValue={totals.cacheTokens}
-          sub={totals.totalTokens > 0 ? `命中 ${totals.cacheHitRate.toFixed(0)}%` : '暂无用量'}
+          sub={totals.totalTokens > 0 ? `命中 ${totals.cacheHitRate.toFixed(0)}%` : '暫無用量'}
           delta={U.deltaPct(totals.cacheTokens, compareData.totals?.cacheTokens)}
           sparkValues={sparkBy('cacheReadTokens')} sparkColor="oklch(0.65 0.11 200)" />
-        <KPI label="估算费用" value={U.fmtUS.format(totals.costUSD)}
-          notice={filtered.some(r => r.totalTokens > 0 && M.pricing?.models?.[r.model] === false) ? '部分模型未匹配价格 · 估价可能不完整' : null}
+        <KPI label="估算費用" value={U.fmtUS.format(totals.costUSD)}
+          notice={filtered.some(r => r.totalTokens > 0 && M.pricing?.models?.[r.model] === false) ? '部分模型未比對到價格 · 估價可能不完整' : null}
           numericValue={totals.costUSD} format={U.fmtUS.format}
-          sub="累计"
+          sub="累計"
           delta={U.deltaPct(totals.costUSD, compareData.totals?.costUSD)}
           sparkValues={sparkBy('costUSD')} sparkColor="oklch(0.72 0.14 75)" />
       </div>

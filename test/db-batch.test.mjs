@@ -31,10 +31,10 @@ test('batchUpsertTimeUsage crosses chunk boundaries and is idempotent', async ()
     await batchUpsertTimeUsage(db, rows);
     let { c } = await db.get('SELECT COUNT(*) AS c FROM time_usage');
     assert.equal(c, 401);
-    await batchUpsertTimeUsage(db, rows); // 重跑不产生重复
+    await batchUpsertTimeUsage(db, rows); // 重跑不產生重複
     ({ c } = await db.get('SELECT COUNT(*) AS c FROM time_usage'));
     assert.equal(c, 401);
-    await batchUpsertTimeUsage(db, []); // 空批不报错
+    await batchUpsertTimeUsage(db, []); // 空批不報錯
     await db.close();
   } finally { cleanup(); }
 });
@@ -64,7 +64,7 @@ test('batchUpsertDaily writes reconciled historical costs and tokens together', 
   const { path, cleanup } = tmpDbPath();
   try {
     const db = await openDb(path);
-    await batchUpsertDaily(db, [dailyRow()]); // 历史日期,首次写入
+    await batchUpsertDaily(db, [dailyRow()]); // 歷史日期，首次寫入
     await batchUpsertDaily(db, [dailyRow({ costUSD: 99, totalTokens: 20 })]);
     const row = await db.get('SELECT cost_usd, total_tokens, pricing_locked_at FROM daily_usage WHERE usage_date = ?', ['2026-01-01']);
     assert.equal(row.cost_usd, 99, 'the storage layer must accept reconciled costs');
@@ -78,7 +78,7 @@ test('batchUpsertDaily updates cost for today', async () => {
   const { path, cleanup } = tmpDbPath();
   try {
     const db = await openDb(path);
-    const today = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD 本地时区
+    const today = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD 本地時區
     await batchUpsertDaily(db, [dailyRow({ usageDate: today, costUSD: 1 })]);
     await batchUpsertDaily(db, [dailyRow({ usageDate: today, costUSD: 2 })]);
     const row = await db.get('SELECT cost_usd, pricing_locked_at FROM daily_usage WHERE usage_date = ?', [today]);

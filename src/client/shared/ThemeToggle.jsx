@@ -9,7 +9,7 @@ import { useTheme } from './theme.js';
 export function ThemeToggle({ className = 'btn btn-icon' }) {
   const { theme, toggleTheme } = useTheme();
   const goingDark = theme === 'light';
-  const label = goingDark ? '切换到暗色主题' : '切换到亮色主题';
+  const label = goingDark ? '切換到深色主題' : '切換到淺色主題';
 
   return (
     <button className={className} onClick={toggleTheme} title={label} aria-label={label}>

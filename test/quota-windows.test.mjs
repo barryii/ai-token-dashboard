@@ -10,7 +10,7 @@ const LIVE = [
 ];
 
 test('known windows keep their Chinese labels', () => {
-  assert.equal(quotaWindowLabel('five_hour'), '5 小时');
+  assert.equal(quotaWindowLabel('five_hour'), '5 小時');
   assert.equal(quotaWindowLabel('seven_day'), '7 天');
   assert.equal(quotaWindowLabel('seven_day_opus'), '7 天 · Opus');
 });

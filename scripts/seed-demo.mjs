@@ -191,7 +191,7 @@ async function main() {
   const cost = dailyRows.reduce((s, r) => s + r.costUSD, 0);
   console.log(`seeded ${dbPath}`);
   console.log(`  ${days} days · ${dailyRows.length} daily rows · ${timeRows.length} events · ${sessionRows.length} sessions`);
-  console.log(`  ${(tokens / 1e8).toFixed(2)} 亿 tokens · $${cost.toFixed(2)}`);
+  console.log(`  ${(tokens / 1e8).toFixed(2)} 億 tokens · $${cost.toFixed(2)}`);
   await db.close?.();
 }
 
