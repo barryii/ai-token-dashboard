@@ -46,7 +46,7 @@ test('summary makes one request and detail loading fetches only the requested pa
   } });
   assert.equal(calls, 2); assert.equal(page.nextCursor, 'next');
   await assert.rejects(fetchTimeSummary(range, { fetcher: async () => ({ ok: false, status: 503 }) }), /503/);
-  await assert.rejects(fetchTimeSummary(range, { fetcher: async () => ({ ok: true, json: async () => ({ time: [] }) }) }), /统计数据/);
+  await assert.rejects(fetchTimeSummary(range, { fetcher: async () => ({ ok: true, json: async () => ({ time: [] }) }) }), /統計資料/);
 });
 
 test('summary separates exact current/comparison bounds; drawer and export preserve active dimensions', () => {

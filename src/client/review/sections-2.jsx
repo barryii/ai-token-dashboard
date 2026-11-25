@@ -90,8 +90,8 @@ function ToolsSection({ daily, totalTokens }) {
   return (
     <section className="story">
       <div className="section-label">04 · 工具</div>
-      <h2 className="section-title">你是怎么用这些工具的</h2>
-      <p className="section-sub">每个工具背后挑选了不同模型、有不同的费用结构。这是它们各自的份额与组合。</p>
+      <h2 className="section-title">你是怎麼用這些工具的</h2>
+      <p className="section-sub">每個工具背後挑選了不同模型、有不同的費用結構。這是它們各自的份額與組合。</p>
 
       <div className="tools-split">
         <div style={{display: 'flex', justifyContent: 'center'}}>
@@ -99,7 +99,7 @@ function ToolsSection({ daily, totalTokens }) {
             <EChart option={donutOption} height={280}/>
             <div className="donut-center">
               <div>
-                <div className="l">主导工具</div>
+                <div className="l">主導工具</div>
                 <div className="v">{top.share.toFixed(0)}%</div>
                 <div className="s">{top.key}</div>
               </div>
@@ -120,7 +120,7 @@ function ToolsSection({ daily, totalTokens }) {
               <div className="tool-stats">
                 <div>
                   <div className="tokens">{U.compactCN(t.totalTokens)}</div>
-                  <div className="cost">{t.costUSD > 0 ? U.fmtUS.format(t.costUSD) : '免费'}</div>
+                  <div className="cost">{t.costUSD > 0 ? U.fmtUS.format(t.costUSD) : '免費'}</div>
                 </div>
                 <span className="tool-badge" title="Cache hit rate">
                   <svg viewBox="0 0 12 12" fill="none">
@@ -200,29 +200,29 @@ function EfficiencySection({ daily, period }) {
   return (
     <section className="story">
       <div className="section-label">05 · 效率</div>
-      <h2 className="section-title">你的 Token 用得高效吗</h2>
-      <p className="section-sub">从三个角度看 token 的"性价比"——重复利用率、信息密度、推理强度。</p>
+      <h2 className="section-title">你的 Token 用得高效嗎</h2>
+      <p className="section-sub">從三個角度看 token 的「性價比」——重複利用率、資訊密度、推理強度。</p>
 
       <div className="eff-grid">
         <EffCard
           label="Cache 命中率"
           value={cacheRate.toFixed(1)}
           unit="%"
-          note={`每命中一次 cache，节省约 ${Math.max(1, Math.round(cacheRate / 8))}× 的输入费用。本期一共节省 ${U.compactCN(totals.cacheRead)} tokens 的重复计算。`}
+          note={`每命中一次 cache，節省約 ${Math.max(1, Math.round(cacheRate / 8))}× 的輸入費用。本期一共節省 ${U.compactCN(totals.cacheRead)} tokens 的重複計算。`}
           spark={cacheSeries}
           color="oklch(0.55 0.16 265)"/>
         <EffCard
           label="Input / Output 比"
           value={ioRatio.toFixed(1)}
           unit=":1"
-          note={`平均喂给模型 ${ioRatio.toFixed(1)} 个 token，模型生成 1 个。比值越低说明指令越紧凑、生成越密集。`}
+          note={`平均餵給模型 ${ioRatio.toFixed(1)} 個 token，模型產生 1 個。比值越低說明指令越緊湊、產生越密集。`}
           spark={ioSeries}
           color="oklch(0.65 0.11 200)"/>
         <EffCard
-          label="Reasoning 占比"
+          label="Reasoning 佔比"
           value={reasonPct.toFixed(1)}
           unit="%"
-          note={`推理 token 比例越高，说明你交给模型的任务越复杂——通常对应代码重构、调试或多步规划。`}
+          note={`推理 token 比例越高，說明你交給模型的任務越複雜——通常對應程式碼重構、除錯或多步規劃。`}
           spark={reasonSeries}
           color="oklch(0.65 0.12 150)"/>
       </div>
@@ -277,18 +277,18 @@ function InsightsSection({ insights }) {
   if (!insights.length) {
     return (
       <section className="story">
-        <div className="section-label">06 · 复盘</div>
-        <h2 className="section-title">几件值得复盘的小事</h2>
-        <div className="no-data">本期没有明显的异常或趋势变化。</div>
+        <div className="section-label">06 · 複盤</div>
+        <h2 className="section-title">幾件值得複盤的小事</h2>
+        <div className="no-data">本期沒有明顯的異常或趨勢變化。</div>
       </section>
     );
   }
 
   return (
     <section className="story">
-      <div className="section-label">06 · 复盘</div>
-      <h2 className="section-title">几件值得复盘的小事</h2>
-      <p className="section-sub">基于你本期与上一周期的对比，自动挑出最值得关注的几条。点击展开看支撑数据。</p>
+      <div className="section-label">06 · 複盤</div>
+      <h2 className="section-title">幾件值得複盤的小事</h2>
+      <p className="section-sub">基於你本期與上一週期的對比，自動挑出最值得關注的幾條。點選展開看支撐資料。</p>
 
       <div className="insights">
         {insights.map((ins, i) => (

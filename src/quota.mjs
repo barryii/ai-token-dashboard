@@ -295,7 +295,7 @@ function claudeHeaders(token) {
 
 async function queryClaude() {
   let creds = readClaudeCreds();
-  if (!creds) return { ok: false, status: 'no_credentials', message: '未找到 Claude 登录凭据' };
+  if (!creds) return { ok: false, status: 'no_credentials', message: '未找到 Claude 登入憑證' };
   const profile = readClaudeProfile() || {};
 
   // Proactive: refresh before calling when the access token is at/near expiry.
@@ -317,7 +317,7 @@ async function queryClaude() {
   const fields = { email: profile.email || null, name: profile.name || null, plan: creds.plan, expiresAt: creds.expiresAt };
   const account = Object.values(fields).some(Boolean) ? fields : null;
 
-  if (status === 401 || status === 403) return { ok: false, status: 'expired', message: '登录已过期，请重新登录 Claude', account };
+  if (status === 401 || status === 403) return { ok: false, status: 'expired', message: '登入已過期，請重新登入 Claude', account };
   if (status !== 200 || typeof body !== 'object') {
     return { ok: false, status: 'error', message: `HTTP ${status}`, account };
   }
@@ -347,7 +347,7 @@ function codexHeaders(auth) {
 
 async function queryCodex() {
   let auth = readCodexAuth();
-  if (!auth) return { ok: false, status: 'no_credentials', message: '未找到 Codex 登录凭据' };
+  if (!auth) return { ok: false, status: 'no_credentials', message: '未找到 Codex 登入憑證' };
 
   // Proactive: the access token is a JWT — refresh before calling if its exp is near.
   const exp = decodeJwtPayload(auth.token)?.exp;
@@ -368,7 +368,7 @@ async function queryCodex() {
 
   const account = codexAccount(auth.idToken);
 
-  if (status === 401 || status === 403) return { ok: false, status: 'expired', message: '登录已过期，请重新登录 Codex', account };
+  if (status === 401 || status === 403) return { ok: false, status: 'expired', message: '登入已過期，請重新登入 Codex', account };
   if (status !== 200 || typeof body !== 'object') {
     return { ok: false, status: 'error', message: `HTTP ${status}`, account };
   }

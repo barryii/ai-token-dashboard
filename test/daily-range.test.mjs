@@ -82,7 +82,7 @@ test('range loaders send explicit dates, propagate errors and reject old server 
       return { ok: false, status: 503 };
     } }), /503/);
   }
-  await assert.rejects(fetchDailyRange(range, { fetcher: async () => ({ ok: true, json: async () => ({ daily: [], projectDaily: [] }) }) }), /服务端已升级/);
+  await assert.rejects(fetchDailyRange(range, { fetcher: async () => ({ ok: true, json: async () => ({ daily: [], projectDaily: [] }) }) }), /伺服器端已升級/);
 });
 
 test('range cache cancels superseded requests, ignores stale responses and retries failures', async () => {

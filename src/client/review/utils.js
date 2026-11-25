@@ -17,7 +17,7 @@ function parseDateStr(s) {
 }
 
 const PERIOD_LABELS = {
-  week: '本周',
+  week: '本週',
   month: '本月',
   prev:  '上月',
   '90d': '近 90 天',
@@ -30,7 +30,7 @@ function getPeriod(id, today = new Date(), rows = []) {
     const start = new Date(t); start.setDate(t.getDate() - 6);
     return {
       id,
-      label: '本周',
+      label: '本週',
       start: localDateStr(start),
       end:   localDateStr(t),
       pretty: `${localDateStr(start).slice(5)} – ${localDateStr(t).slice(5)}`,
@@ -209,13 +209,13 @@ function buildInsights(daily, period, prevDaily) {
     insights.push({
       kind: 'red',
       emoji: '⚡',
-      headline: `${peak.date.slice(5)} 单日消耗是平均的 ${ratio} 倍`,
+      headline: `${peak.date.slice(5)} 單日消耗是平均的 ${ratio} 倍`,
       detail: [
-        { k: '当日总量', v: U.compactCN(peak.total) },
+        { k: '當日總量', v: U.compactCN(peak.total) },
         { k: '日均',     v: U.compactCN(avg) },
         { k: '主因',     v: topTool ? topTool[0] : '—' }
       ],
-      narrative: `当天 ${topTool ? topTool[0] : '主要工具'} 贡献了 ${topTool ? ((topTool[1] / peak.total) * 100).toFixed(0) : 0}% 的用量，可能与大规模重构或新任务启动相关。`
+      narrative: `當天 ${topTool ? topTool[0] : '主要工具'} 貢獻了 ${topTool ? ((topTool[1] / peak.total) * 100).toFixed(0) : 0}% 的用量，可能與大規模重構或新任務啟動相關。`
     });
   }
 
@@ -230,13 +230,13 @@ function buildInsights(daily, period, prevDaily) {
       insights.push({
         kind: 'yellow',
         emoji: '💰',
-        headline: `${a.key} 单位 token 费用是 ${b.key} 的 ${ratio} 倍`,
+        headline: `${a.key} 單位 token 費用是 ${b.key} 的 ${ratio} 倍`,
         detail: [
-          { k: `${a.key} $/百万 tk`, v: U.fmtUS.format(aCostPerM) },
-          { k: `${b.key} $/百万 tk`, v: U.fmtUS.format(bCostPerM) },
-          { k: '费用差距', v: U.fmtUS.format(a.costUSD - b.costUSD) }
+          { k: `${a.key} $/百萬 tk`, v: U.fmtUS.format(aCostPerM) },
+          { k: `${b.key} $/百萬 tk`, v: U.fmtUS.format(bCostPerM) },
+          { k: '費用差距', v: U.fmtUS.format(a.costUSD - b.costUSD) }
         ],
-        narrative: `如果将 ${a.key} 中的部分工作迁移到 ${b.key}，理论上能省下约 ${U.fmtUS.format((a.costUSD - a.totalTokens / 1e6 * bCostPerM))}。但要权衡场景适配。`
+        narrative: `如果將 ${a.key} 中的部分工作遷移到 ${b.key}，理論上能省下約 ${U.fmtUS.format((a.costUSD - a.totalTokens / 1e6 * bCostPerM))}。但要權衡情境適配。`
       });
     }
   }
@@ -252,15 +252,15 @@ function buildInsights(daily, period, prevDaily) {
       insights.push({
         kind: diff > 0 ? 'green' : 'yellow',
         emoji: diff > 0 ? '🌱' : '⚠️',
-        headline: `Cache 命中率${diff > 0 ? '提升' : '下降'} ${Math.abs(diff).toFixed(1)} 个百分点`,
+        headline: `Cache 命中率${diff > 0 ? '提升' : '下降'} ${Math.abs(diff).toFixed(1)} 個百分點`,
         detail: [
           { k: '本期', v: `${currRate.toFixed(1)}%` },
           { k: '上期', v: `${prevRate.toFixed(1)}%` },
-          { k: '节省 tk',  v: U.compactCN(totals.cache - prevCache) }
+          { k: '節省 tk',  v: U.compactCN(totals.cache - prevCache) }
         ],
         narrative: diff > 0
-          ? `更高的命中率意味着你在同一上下文里反复迭代，工作连续性更好。继续保持。`
-          : `命中率下降可能是因为切换项目或重启上下文更频繁，看看能否合并任务批次。`
+          ? `更高的命中率意味著你在同一上下文裡反覆迭代，工作連續性更好。繼續保持。`
+          : `命中率下降可能是因為切換專案或重啟上下文更頻繁，看看能否合併任務批次。`
       });
     }
   }
@@ -284,13 +284,13 @@ function buildInsights(daily, period, prevDaily) {
       insights.push({
         kind: 'blue',
         emoji: '🚀',
-        headline: `${top.key} 用量上升 ${top.delta.toFixed(0)}%，是你最近的主战场`,
+        headline: `${top.key} 用量上升 ${top.delta.toFixed(0)}%，是你最近的主戰場`,
         detail: [
           { k: '本期', v: U.compactCN(top.totalTokens) },
           { k: '上期', v: U.compactCN(top.prevTokens) },
           { k: '增幅', v: `+${top.delta.toFixed(0)}%` }
         ],
-        narrative: `该项目本期消耗集中在 ${top.dayCount} 个活跃天，平均每天 ${U.compactCN(Math.round(top.totalTokens / Math.max(1, top.dayCount)))} tokens。`
+        narrative: `該專案本期消耗集中在 ${top.dayCount} 個活躍天，平均每天 ${U.compactCN(Math.round(top.totalTokens / Math.max(1, top.dayCount)))} tokens。`
       });
     }
   }

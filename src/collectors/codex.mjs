@@ -243,9 +243,9 @@ export function parseSessionText(text, sessionId, state = {}) {
       const lastUsage  = info.last_token_usage  ? usageSummary(info.last_token_usage)  : null;
       const totalUsage = info.total_token_usage ? usageSummary(info.total_token_usage) : null;
 
-      // Fork 和子代理会把父会话历史复制到新文件，并把历史事件统一改写为
-      // 子会话创建时刻。跳过这一秒内的重放记录，但保留累计基线，避免
-      // 子会话自己的首条增量被误判为一次全新的累计序列。
+      // Fork 和子代理會把父會話歷史複製到新檔案，並把歷史事件統一改寫為
+      // 子會話建立時刻。跳過這一秒內的重放記錄，但保留累計基線，避免
+      // 子會話自己的首條增量被誤判為一次全新的累計序列。
       const timestamp = typeof entry.timestamp === 'string' ? entry.timestamp : '';
       if (replaySession) {
         const eventSecond = timestampSecond(timestamp);

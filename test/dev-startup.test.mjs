@@ -39,7 +39,7 @@ test('dev refuses occupied API or client ports before starting either child', { 
   try {
     for (const env of [{ API_PORT: busy.port, CLIENT_PORT: free.port }, { API_PORT: free.port, CLIENT_PORT: busy.port }]) {
       const result = await launch(root, env).done;
-      assert.equal(result.code, 1); assert.match(result.output, /端口已被占用/); assert.match(result.output, /Ctrl\+C/);
+      assert.equal(result.code, 1); assert.match(result.output, /連接埠已被佔用/); assert.match(result.output, /Ctrl\+C/);
       assert.ok(result.output.includes(String(busy.port))); assert.doesNotMatch(result.output, /READY:|Unhandled|SQLite/);
       assert.ok(busy.server.listening, 'must not terminate the existing listener');
     }

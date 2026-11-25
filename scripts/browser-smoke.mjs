@@ -28,10 +28,10 @@ try {
   let configFailure = true;
   await page.route('**/api/config', route => configFailure ? (configFailure = false, route.fulfill({ status: 503, body: '{}' })) : route.continue());
   await page.goto(app.base);
-  await page.getByRole('alert').filter({ hasText: '展示配置加载失败' }).waitFor();
-  await page.getByRole('button', { name: '重试', exact: true }).click();
+  await page.getByRole('alert').filter({ hasText: '展示設定載入失敗' }).waitFor();
+  await page.getByRole('button', { name: '重試', exact: true }).click();
   await page.getByRole('heading', { name: 'Token Studio', exact: true }).waitFor();
-  await page.getByText('时间（Asia/Shanghai）', { exact: true }).waitFor();
+  await page.getByText('時間（Asia/Shanghai）', { exact: true }).waitFor();
   assert.match(await page.locator('.dt-range-trigger').innerText(), /2026-10-01/);
   assert.ok(!requests.some(url => /\/ReviewApp-.*\.js/.test(url)), 'dashboard must not load the review bundle');
 
@@ -68,28 +68,28 @@ try {
   assert.equal(await page.locator('.dt-title').innerText(), '2026年10月');
   const day = page.locator('.dt-day:not(.muted)').filter({ hasText: /^1$/ });
   await day.click(); await day.click();
-  await page.getByRole('button', { name: '重试统计' }).click();
+  await page.getByRole('button', { name: '重試統計' }).click();
   await expectTotal('5,610');
   const summaryUrl = new URL(requests.filter(url => url.includes('/api/time/summary?')).at(-1));
   assert.equal(summaryUrl.searchParams.get('start'), '2026-09-30T16:00:00.000Z');
   assert.equal(summaryUrl.searchParams.get('end'), '2026-10-01T15:59:00.000Z');
 
   await page.locator('.table-panel tbody tr').first().click();
-  const details = page.getByRole('region', { name: '事件明细' });
-  await details.getByText('第 1 页 · 本页 50 条').waitFor();
+  const details = page.getByRole('region', { name: '事件明細' });
+  await details.getByText('第 1 頁 · 本頁 50 筆').waitFor();
   assert.equal(await details.locator('tbody tr').count(), 50);
   assert.equal(await details.locator('tbody tr').first().locator('td').first().innerText(), '2026-10-01 01:00');
   let detailFailure = true;
   await page.route('**/api/time?**', route => detailFailure ? (detailFailure = false, route.fulfill({ status: 503, body: '{}' })) : route.continue());
-  await details.getByRole('button', { name: '下一页' }).click();
-  await details.getByRole('button', { name: '重试明细' }).click();
-  await details.getByText('第 2 页 · 本页 1 条').waitFor();
+  await details.getByRole('button', { name: '下一頁' }).click();
+  await details.getByRole('button', { name: '重試明細' }).click();
+  await details.getByText('第 2 頁 · 本頁 1 筆').waitFor();
   assert.equal(await details.locator('tbody tr').count(), 1);
   await page.keyboard.press('Escape');
   await page.getByRole('dialog').waitFor({ state: 'hidden' });
   await page.locator('.export-menu summary').click();
   const downloadReady = page.waitForEvent('download');
-  await page.getByRole('button', { name: '用量明细', exact: true }).click();
+  await page.getByRole('button', { name: '用量明細', exact: true }).click();
   const download = await downloadReady;
   const csv = await readFile(await download.path(), 'utf8');
   assert.equal(csv.trim().split('\n').length, 52);
@@ -102,7 +102,7 @@ try {
       .slice(0, 15).map(node => ({ tag: node.tagName, class: node.className, width: node.getBoundingClientRect().width, right: node.getBoundingClientRect().right }))));
     throw error;
   });
-  await page.getByRole('link', { name: '复盘', exact: true }).click();
+  await page.getByRole('link', { name: '複盤', exact: true }).click();
   await page.locator('.period-current').filter({ hasText: '2026 年 10 月 · Asia/Shanghai' }).waitFor();
   await page.waitForFunction(() => document.documentElement.scrollWidth <= innerWidth).catch(async error => {
     console.error(await page.evaluate(() => [...document.querySelectorAll('body *')].filter(node => node.getBoundingClientRect().right > innerWidth + 1)
@@ -120,7 +120,7 @@ try {
   await chartPage.route('**/chart-runtime-*.js', route => route.abort());
   await chartPage.goto(app.base + '/review');
   await chartPage.locator('.donut-wrap').scrollIntoViewIfNeeded();
-  const retryChart = chartPage.getByRole('button', { name: '图表加载失败，重新加载页面' }).first();
+  const retryChart = chartPage.getByRole('button', { name: '圖表載入失敗，重新載入頁面' }).first();
   await retryChart.waitFor();
   await chartPage.unroute('**/chart-runtime-*.js');
   await Promise.all([chartPage.waitForEvent('load'), retryChart.click()]);

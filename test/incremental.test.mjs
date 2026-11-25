@@ -8,9 +8,9 @@ test('dedupeEventKeys keeps unique keys and suffixes duplicates deterministicall
   const rows = [{ eventKey: 'a' }, { eventKey: 'b' }, { eventKey: 'a' }, { eventKey: 'a' }];
   const out = dedupeEventKeys(rows);
   assert.deepEqual(out.map(r => r.eventKey), ['a', 'b', 'a#1', 'a#2']);
-  // 同输入再跑一遍结果相同(幂等的前提)
+  // 同輸入再跑一遍結果相同（冪等的前提）
   assert.deepEqual(dedupeEventKeys(rows).map(r => r.eventKey), ['a', 'b', 'a#1', 'a#2']);
-  // 原数组对象未被修改
+  // 原陣列物件未被修改
   assert.equal(rows[2].eventKey, 'a');
 });
 

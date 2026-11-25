@@ -78,7 +78,7 @@ export function EChart({ option, height = 320, onEvents }) {
     <div ref={ref} style={{ width: '100%', height: '100%' }} />
     {!ready && <div role="status" style={{ position: 'absolute', inset: 0, display: 'grid', placeContent: 'center', color: 'var(--muted)', fontSize: 12 }}>
       {/* Browsers cache failed module imports; a fresh page clears that failure. */}
-      {error ? <button className="btn" onClick={() => window.location.reload()}>图表加载失败，重新加载页面</button> : '图表加载中…'}
+      {error ? <button className="btn" onClick={() => window.location.reload()}>圖表載入失敗，重新載入頁面</button> : '圖表載入中…'}
     </div>}
   </div>;
 }

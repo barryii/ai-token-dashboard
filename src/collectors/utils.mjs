@@ -86,10 +86,10 @@ export function inferProviderFromModel(model) {
 }
 
 /**
- * 计算统一 Token 总量。
+ * 計算統一 Token 總量。
  *
- * Codex 的 output 已包含 reasoning，reasoning 字段仅作为明细展示；
- * 其他来源保持原有的独立 reasoning 计数语义。
+ * Codex 的 output 已包含 reasoning，reasoning 欄位僅作為明細顯示；
+ * 其他來源保持原有的獨立 reasoning 計數語意。
  *
  * @author fengguanghuai-jwk
  * @date 2026-07-10
